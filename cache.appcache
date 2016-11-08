@@ -1,0 +1,26 @@
+CACHE MANIFEST
+# Update the next line after a change is made.
+# 2016-11-04:v1.0.0
+
+# HTML
+index.html
+
+nand.html
+nor.html
+not.html
+xnor.html
+
+about.html
+terms.html
+privacy.html
+
+# CSS
+css/xor.css
+
+# JavaScript
+https://code.jquery.com/jquery-3.1.1.min.js
+js/xor.js
+
+# Resources that require the user to be online (everything not listed above).
+NETWORK:
+*

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html manifest="cache.appcache">
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="author" content="import-this">
+        <meta name="application-name" content="xnor">
+        <meta name="description" content="A small collection of simple logic puzzle games - #xor">
+        <meta name="keywords" content="xor, xnor, game, games, puzzle, puzzles,
+            2D, HTML, HTML5, import-this, github, github.io, open source">
+        <meta name="robots" content="index, follow">
+
+        <!-- Mobile devices magic. -->
+        <meta name="viewport" content="width=device-width, height=device-height, minimal-ui">
+
+        <!-- Open Graph for Facebook. -->
+        <meta property="og:url" content="https://import-this.github.io/xor/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="xor" />
+        <meta property="og:site_name" content="xor" />
+        <meta property="og:image" content="https://import-this.github.io/xor/img/wallpaper.png" />
+        <meta property="og:description" content="A small collection of simple logic puzzle games - #xor" />
+
+        <!-- Google Search Console verification method. -->
+        <meta name="google-site-verification" content="l3FLvijRzmzAxnDb7k-KtuYtiKbbELUQLsvJUs1YOs0" />
+
+        <title>xnor</title>
+
+        <link rel="stylesheet" type="text/css" href="css/xor.css">
+
+        <!-- jQuery from jQuery CDN with Subresource Integrity (SRI) checking. -->
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+            crossorigin="anonymous"></script>
+        <script type="text/javascript" src="js/xor.js"></script>
+
+        <!-- Google Analytics -->
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-87031518-1', 'auto');
+            ga('send', 'pageview');
+        </script>
+    </head>
+    <body>
+        <!-- Facebook JavaScript SDK -->
+        <div id="fb-root"></div>
+        <script>
+            (function(d, s, id) {
+                var js, fjs = d.getElementsByTagName(s)[0];
+                if (d.getElementById(id)) return;
+                js = d.createElement(s); js.id = id;
+                js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.8";
+                fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));
+        </script>
+
+        <div id="container">
+            <header id="header">
+                <h2 id="xnor">xnor</h2>
+                <div id="description">
+                    <p id="instructions">
+                        <strong>0 xnor 0 = 1</strong>,
+                        <strong>0 xnor 1 = 0</strong>,
+                        <strong>1 xnor 0 = 0</strong>,
+                        <strong>1 xnor 1 = 1</strong>.<br />
+                        <strong>Convert all cells to 1.</strong>
+                    </p>
+                </div>
+                <div id="options">
+                    <input id="five" type="checkbox" value="five">
+                    <label for="five"><span></span>5 x 5</label>
+                    <input id="diagonal" type="checkbox" value="diagonal">
+                    <label for="diagonal"><span></span>+diagonals</label>
+                    <input id="circular" type="checkbox" value="circular">
+                    <label for="circular"><span></span>Circular</label>
+                </div>
+                <div>
+                    <button id="new-game" class="restart-button" name="restart" type="button">New Game</button>
+                    <div id="stats">
+                        <div>
+                            <div id="move-count" class="button">Moves: <span>0</span></div>
+                            <div id="best-move-count" class="button">Best: <span>N/A</span></div>
+                        </div>
+                        <div>
+                            <div id="time" class="button">Time: <span>00:00</span></div>
+                            <div id="best-time" class="button">Best: <span>N/A</span></div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div id="game-container">
+                <div id="win-screen">
+                    <div>
+                        <div id="win">You win!</div>
+                        <button class="restart-button" name="restart" type="button">Try again</button>
+                        <div>
+                            <!-- Facebook Like and Share Buttons -->
+                            <div class="fb-like" data-href="https://www.facebook.com/xor-1092923960826578/" data-layout="button" data-action="like" data-size="large" data-show-faces="false" data-share="true"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="grid-container">
+                    <table id="grid">
+                        <tr class="row">
+                            <td id="p-0-0" class="cell"></td>
+                            <td id="p-0-1" class="cell"></td>
+                            <td id="p-0-2" class="cell"></td>
+                            <td id="p-0-3" class="cell"></td>
+                            <td id="p-0-4" class="cell five"></td>
+                        </tr>
+                        <tr class="row">
+                            <td id="p-1-0" class="cell"></td>
+                            <td id="p-1-1" class="cell"></td>
+                            <td id="p-1-2" class="cell"></td>
+                            <td id="p-1-3" class="cell"></td>
+                            <td id="p-1-4" class="cell five"></td>
+                        </tr>
+                        <tr class="row">
+                            <td id="p-2-0" class="cell"></td>
+                            <td id="p-2-1" class="cell"></td>
+                            <td id="p-2-2" class="cell"></td>
+                            <td id="p-2-3" class="cell"></td>
+                            <td id="p-2-4" class="cell five"></td>
+                        </tr>
+                        <tr class="row">
+                            <td id="p-3-0" class="cell"></td>
+                            <td id="p-3-1" class="cell"></td>
+                            <td id="p-3-2" class="cell"></td>
+                            <td id="p-3-3" class="cell"></td>
+                            <td id="p-3-4" class="cell five"></td>
+                        </tr>
+                        <tr class="row five">
+                            <td id="p-4-0" class="cell"></td>
+                            <td id="p-4-1" class="cell"></td>
+                            <td id="p-4-2" class="cell"></td>
+                            <td id="p-4-3" class="cell"></td>
+                            <td id="p-4-4" class="cell five"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div id="info">
+                <p>
+                    
+                </p>
+            </div>
+            <hr>
+            <div id="footer">
+                <div id="more">
+                    <p>
+                        Created by <a href="https://import-this.github.io/" title="GitHub profile">import-this</a>.
+                    </p>
+                    You may also like its sibling puzzles:
+                    <a href="index.html" title="xor puzzle">xor</a>,
+                    <a href="not.html" title="not puzzle">not</a>,
+                    <a href="nand.html" title="nand puzzle">nand</a>,
+                    <a href="nor.html" title="nor puzzle">nor</a>.
+                </div>
+                <div id="social">
+                    <!-- Facebook Like and Share Buttons -->
+                    <div class="fb-like" data-href="https://www.facebook.com/xor-1092923960826578/" data-layout="button" data-action="like" data-size="large" data-show-faces="false" data-share="true"></div>
+                    <!-- GitHub Star Button (https://ghbtns.com/ with modifications) -->
+                    <iframe src="https://ghbtns.com/github-btn.html?user=import-this&repo=xor&type=star" scrolling="0" width="50" height="20"></iframe>
+                </div>
+                <hr>
+                <div id="about">
+                    <a href="about.html" title="About the game">About</a> -
+                    <a href="terms.html" title="About usage rules">Terms of Use</a> -
+                    <a href="privacy.html" title="About collected info">Privacy Policy</a>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            (function($) {
+                function xnor(val, otherVal) {
+                    return Number(!(val ^ otherVal));
+                }
+
+                function startGame(newGame) {
+                    function square() {
+                        var $cells = $('.cell');
+                        $cells.height($cells.width());
+                    }
+
+                    op.start(newGame, {
+                        operator: xnor,
+                        prefix: 'xnor_'
+                    });
+
+                    // Square cells.
+                    square();
+                    // and keep them square.
+                    $(window).off('resize').resize(square);
+                }
+
+                // Let the game begin (old or new).
+                startGame(false);
+
+                $('#five').change(function() {
+                    $('.five').toggle($(this).prop('checked'));
+                    startGame();
+                });
+                $('#diagonal, #circular').change(startGame);
+                $('.restart-button').click(startGame);
+            }(jQuery));
+        </script>
+
+        <!-- Adblock detection -->
+        <script type="text/javascript" src="js/ads.js"></script>
+        <script type="text/javascript">
+            (function() {
+                if (!window.noAdblock) {
+                    // Adblock detected!
+
+                } else {
+
+                }
+            }());
+        </script>
+    </body>
+</html>
