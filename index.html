@@ -6,7 +6,7 @@
         <meta name="author" content="import-this">
         <meta name="application-name" content="xor">
         <meta name="description" content="A small collection of simple logic puzzle games - #xor">
-        <meta name="keywords" content="xor, xnor, not, nand, nor, game, games, puzzle, puzzles,
+        <meta name="keywords" content="xor, xnor, not, nand, game, games, puzzle, puzzles,
             2D, HTML, HTML5, import-this, github, github.io, open source">
         <meta name="robots" content="index, follow">
 
@@ -63,23 +63,36 @@
                 <h2 id="xor">xor</h2>
                 <div id="description">
                     <p id="instructions">
-                        <strong>0 xor 0 = 0</strong>,
-                        <strong>0 xor 1 = 1</strong>,
-                        <strong>1 xor 0 = 1</strong>,
-                        <strong>1 xor 1 = 0</strong>.<br />
-                        <strong>Convert all cells to 1.</strong>
+                        <strong>
+                            0 xor 0 = 0,
+                            0 xor 1 = 1,
+                            1 xor 0 = 1,
+                            1 xor 1 = 0.<br />
+                            Convert all cells to 1.
+                        </strong>
                     </p>
                 </div>
                 <div id="options">
-                    <input id="five" type="checkbox" value="five">
-                    <label for="five"><span></span>5 x 5</label>
-                    <input id="diagonal" type="checkbox" value="diagonal">
-                    <label for="diagonal"><span></span>+diagonals</label>
-                    <input id="circular" type="checkbox" value="circular">
-                    <label for="circular"><span></span>Circular</label>
+                    <div id="checkboxes">
+                        <input id="diagonal" type="checkbox" name="neighborhood" value="diagonal">
+                        <label for="diagonal"><span></span>Diagonals</label>
+                        <input id="circular" type="checkbox" name="neighborhood" value="circular">
+                        <label for="circular"><span></span>Circular</label>
+                    </div>
+                    <div id="radios">
+                        <input id="four" type="radio" name="grid-size" value="4">
+                        <label for="four"><span></span>4 x 4</label>
+                        <input id="five" type="radio" name="grid-size" value="5" checked>
+                        <label for="five"><span></span>5 x 5</label>
+                        <input id="six" type="radio" name="grid-size" value="6">
+                        <label for="six"><span></span>6 x 6</label>
+                    </div>
                 </div>
                 <div>
-                    <button id="new-game" class="restart-button" name="restart" type="button">New Game</button>
+                    <div id="start-restart" class="start-restart">
+                        <button class="start-button" name="start" type="button">New Game</button>
+                        <button class="restart-button" name="restart" type="button">Restart</button>
+                    </div>
                     <div id="stats">
                         <div>
                             <div id="move-count" class="button">Moves: <span>0</span></div>
@@ -96,7 +109,10 @@
                 <div id="win-screen">
                     <div>
                         <div id="win">You win!</div>
-                        <button class="restart-button" name="restart" type="button">Try again</button>
+                        <div class="start-restart">
+                            <button class="start-button" name="start" type="button">New Game</button>
+                            <button class="restart-button" name="restart" type="button">Restart</button>
+                        </div>
                         <div>
                             <!-- Facebook Like and Share Buttons -->
                             <div class="fb-like" data-href="https://www.facebook.com/xor-1092923960826578/" data-layout="button" data-action="like" data-size="large" data-show-faces="false" data-share="true"></div>
@@ -111,6 +127,7 @@
                             <td id="p-0-2" class="cell"></td>
                             <td id="p-0-3" class="cell"></td>
                             <td id="p-0-4" class="cell five"></td>
+                            <td id="p-0-5" class="cell six"></td>
                         </tr>
                         <tr class="row">
                             <td id="p-1-0" class="cell"></td>
@@ -118,6 +135,7 @@
                             <td id="p-1-2" class="cell"></td>
                             <td id="p-1-3" class="cell"></td>
                             <td id="p-1-4" class="cell five"></td>
+                            <td id="p-1-5" class="cell six"></td>
                         </tr>
                         <tr class="row">
                             <td id="p-2-0" class="cell"></td>
@@ -125,6 +143,7 @@
                             <td id="p-2-2" class="cell"></td>
                             <td id="p-2-3" class="cell"></td>
                             <td id="p-2-4" class="cell five"></td>
+                            <td id="p-2-5" class="cell six"></td>
                         </tr>
                         <tr class="row">
                             <td id="p-3-0" class="cell"></td>
@@ -132,6 +151,7 @@
                             <td id="p-3-2" class="cell"></td>
                             <td id="p-3-3" class="cell"></td>
                             <td id="p-3-4" class="cell five"></td>
+                            <td id="p-3-5" class="cell six"></td>
                         </tr>
                         <tr class="row five">
                             <td id="p-4-0" class="cell"></td>
@@ -139,26 +159,32 @@
                             <td id="p-4-2" class="cell"></td>
                             <td id="p-4-3" class="cell"></td>
                             <td id="p-4-4" class="cell five"></td>
+                            <td id="p-4-5" class="cell six"></td>
+                        </tr>
+                        <tr class="row six">
+                            <td id="p-5-0" class="cell"></td>
+                            <td id="p-5-1" class="cell"></td>
+                            <td id="p-5-2" class="cell"></td>
+                            <td id="p-5-3" class="cell"></td>
+                            <td id="p-5-4" class="cell five"></td>
+                            <td id="p-5-5" class="cell six"></td>
                         </tr>
                     </table>
                 </div>
             </div>
             <div id="info">
-                <p>
-                    
-                </p>
+                Try to solve the puzzle in as few moves as possible.<br />
+                If the game feels too easy, try changing the options <a href="#options">above</a>.<br />
+                Or try one of its sibling puzzles:
+                <a href="xnor.html" title="xnor puzzle">xnor</a>,
+                <a href="nand.html" title="nand puzzle">nand</a>,
+                <a href="not.html" title="not puzzle">not</a>.<br/>
+                (<a href="nand.html" title="nand puzzle">nand</a> seems the hardest to me.)
             </div>
             <hr>
             <div id="footer">
-                <div id="more">
-                    <p>
-                        Created by <a href="https://import-this.github.io/" title="GitHub profile">import-this</a>.
-                    </p>
-                    You may also like its sibling puzzles:
-                    <a href="xnor.html" title="xnor puzzle">xnor</a>,
-                    <a href="not.html" title="not puzzle">not</a>,
-                    <a href="nand.html" title="nand puzzle">nand</a>,
-                    <a href="nor.html" title="nor puzzle">nor</a>.
+                <div id="profile">
+                    Created by <a href="https://import-this.github.io/" title="GitHub profile">import-this</a>
                 </div>
                 <div id="social">
                     <!-- Facebook Like and Share Buttons -->
@@ -176,38 +202,14 @@
         </div>
 
         <script type="text/javascript">
-            (function($) {
-                function xor(val, otherVal) {
-                    return val ^ otherVal;
-                }
-
-                function startGame(newGame) {
-                    function square() {
-                        var $cells = $('.cell');
-                        $cells.height($cells.width());
-                    }
-
-                    op.start(newGame, {
-                        operator: xor,
-                        prefix: 'xor_'
-                    });
-
-                    // Square cells
-                    square();
-                    // and keep them square.
-                    $(window).off('resize').resize(square);
-                }
-
-                // Let the game begin (old or new).
-                startGame(false);
-
-                $('#five').change(function() {
-                    $('.five').toggle($(this).prop('checked'));
-                    startGame();
+            (function() {
+                op.start({
+                    operator: function xor(val, otherVal) {
+                        return val ^ otherVal;
+                    },
+                    prefix: 'xor'
                 });
-                $('#diagonal, #circular').change(startGame);
-                $('.restart-button').click(startGame);
-            }(jQuery));
+            }());
         </script>
 
         <!-- Adblock detection -->

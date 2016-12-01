@@ -1,12 +1,11 @@
 CACHE MANIFEST
 # Update the next line after a change is made.
-# 2016-11-04:v1.0.0
+# 2016-12-01:v1.0.0
 
 # HTML
 index.html
 
 nand.html
-nor.html
 not.html
 xnor.html
 
