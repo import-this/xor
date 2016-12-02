@@ -181,6 +181,28 @@ input[type='radio']:checked + label > span{
 #description {
     margin-bottom: 10px;
 }
+#instructions span {
+    padding: 0px 5px;
+    border: 1px solid rgba(40, 40, 40, 0.25);
+    -webkit-border-radius: 3px;
+       -moz-border-radius: 3px;
+            border-radius: 3px;
+    -webkit-box-shadow: 0px 0px 1px 0px rgba(40, 40, 40, 0.25);
+       -moz-box-shadow: 0px 0px 1px 0px rgba(40, 40, 40, 0.25);
+            box-shadow: 0px 0px 1px 0px rgba(40, 40, 40, 0.25);
+}
+#instructions .first {
+    color: #3998d6;
+    /* Midpoint between #f2f0f5 and #fefdfd */
+    background-color: #f8f7f9;
+}
+#instructions .second {
+    color: #3a3a3a;
+    background-color: rgba(255, 226, 36, 0.6);
+}
+#rules {
+    letter-spacing: -1px;
+}
 #options {
     margin-bottom: 12px;
 }
