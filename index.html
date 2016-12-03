@@ -60,17 +60,17 @@
 
         <div id="container">
             <header id="header">
-                <h2 id="xor">xor</h2>
+                <h1 id="xor">xor</h1>
                 <div id="description">
                     <p id="instructions">
                         <strong id="rules">
-                            <span class="first">0</span> xor <span class="second">0</span> = 0,
-                            <span class="first">0</span> xor <span class="second">1</span> = 1,
-                            <span class="first">1</span> xor <span class="second">0</span> = 1,
-                            <span class="first">1</span> xor <span class="second">1</span> = 0
+                            <span class="first">0</span> xor <span class="second">0</span> = <span class="third">0</span>,
+                            <span class="first">0</span> xor <span class="second">1</span> = <span class="third">1</span>,
+                            <span class="first">1</span> xor <span class="second">0</span> = <span class="third">1</span>,
+                            <span class="first">1</span> xor <span class="second">1</span> = <span class="third">0</span>
                         </strong>
                         <br/>
-                        <strong id="goal">Convert all cells to 1.</strong>
+                        <strong id="goal">Click on the cells to convert them all to 1's.</strong>
                     </p>
                 </div>
                 <div id="options">
@@ -174,13 +174,28 @@
                 </div>
             </div>
             <div id="info">
-                Try to solve the puzzle in as few moves as possible.<br />
-                If the game feels too easy, try changing the options <a href="#options">above</a>.<br />
-                Or try one of its sibling puzzles:
-                <a href="xnor.html" title="xnor puzzle">xnor</a>,
-                <a href="nand.html" title="nand puzzle">nand</a>,
-                <a href="not.html" title="not puzzle">not</a>.<br/>
-                (<a href="nand.html" title="nand puzzle">nand</a> seems the hardest to me.)
+                <div>
+                    When you click on a cell, the value of the clicked (<em>white</em>) cell is
+                    combined with each of the values of its neigboring (<em>yellow</em>) cells
+                    individually to change them according to the <a href="#rules">rules</a> above.<br />
+                    <em>Hint</em>: Note the colors in the rules.
+                </div>
+                <div>
+                    <h3>Mutators</h3>
+                    <ul>
+                        <li><strong>Diagonals:</strong> Include diagonal neigboring cells.</li>
+                        <li><strong>Circular:</strong> Wrap around at the edges.</li>
+                    </ul>
+                </div>
+                <div>
+                    Try to solve the puzzle in as few moves and as quickly as possible.<br />
+                    If the game feels too easy, try changing the <a href="#options">options</a> above.<br />
+                    Or try one of its sibling puzzles:
+                    <a href="xnor.html" title="xnor puzzle">xnor</a>,
+                    <a href="nand.html" title="nand puzzle">nand</a>,
+                    <a href="not.html" title="not puzzle">not</a>.<br/>
+                    (<a href="nand.html" title="nand puzzle">nand</a> seems the hardest to me.)
+                </div>
             </div>
             <hr>
             <div id="footer">

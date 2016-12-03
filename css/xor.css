@@ -39,6 +39,13 @@ button:hover {
     background-color: #3998d6;
     border: 1px solid #3998d6;
 }
+ul {
+    margin-left: 0;
+    padding-left: 0;
+}
+li {
+    list-style-position: inside;
+}
 
 /* Fancy checkboxes */
 /* http://stackoverflow.com/questions/4148499/how-to-style-checkbox-using-css */
@@ -196,7 +203,7 @@ input[type='radio']:checked + label > span{
     /* Midpoint between #f2f0f5 and #fefdfd */
     background-color: #f8f7f9;
 }
-#instructions .second {
+#instructions .second, #instructions .third {
     color: #3a3a3a;
     background-color: rgba(255, 226, 36, 0.6);
 }
@@ -228,6 +235,9 @@ input[type='radio']:checked + label > span{
 }
 #info {
     margin-bottom: 15px;
+}
+#info > div {
+    margin-bottom: 10px;
 }
 #profile {
     margin-top: 20px;
@@ -276,7 +286,7 @@ input[type='radio']:checked + label > span{
 }
 .neighbor {
     color: #3a3a3a;
-    background-color: rgba(255, 226, 36, 0.975);
+    background-color: rgba(255, 226, 36, 0.9);
 }
 .five, .six {
     display: none;
