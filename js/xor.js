@@ -60,15 +60,19 @@ function formatTime(elapsedTimeSecs) {
     return pad(Math.floor(elapsedTimeSecs / 60)) + ':' + pad(elapsedTimeSecs % 60);
 }
 
-/****** Array ******/
+/****** Arrays ******/
 
 /**
- * Shallow copies a 2D array.
+ * Shallow-copies a 1D array.
+ */
+function copy1d(arr) {
+    return arr.slice();
+}
+/**
+ * Shallow-copies a 2D array.
  */
 function copy2d(array) {
-    return array.map(function copy1d(arr) {
-        return arr.slice();
-    });
+    return array.map(copy1d);
 }
 
 /**
@@ -151,7 +155,7 @@ function newRandomGrid(size) {
 }
 
 function newSolvableGrid(size, allNeighbors, operator, invertSelf) {
-    var grid = [], moves = [], i, j, k, pos, valid, copy;
+    var grid = [], moves = [], moveCount = 0, i, j, k, pos, valid, copy;
 
     // Generate a solved grid and a list of unique moves.
     for (i = 0; i < size; ++i) {
@@ -165,7 +169,7 @@ function newSolvableGrid(size, allNeighbors, operator, invertSelf) {
     // From the solved grid, move some steps back.
     // This guarantees a solvable configuration.
     function undoMove(pos, index) {
-        /*jshint bitwise: false*/
+        /*jshint bitwise: false */
         var oldVal = grid[pos.i][pos.j],
             newVal = operator(grid[i][j], oldVal);
 
@@ -190,13 +194,15 @@ function newSolvableGrid(size, allNeighbors, operator, invertSelf) {
         }
 
         if (valid) {
-            // TODO
+            ++moveCount;
         }
     }
+
 
     if (DEBUG) {
         log(moves.length + ' moves');
         log(moves);
+        log(moveCount);
 
         // Replay the moves to make sure the puzzle is sound.
         // NOTE: This only works for xor and not.
@@ -259,6 +265,76 @@ function invertCell($cell) {
     markCell($cell, res);
 }
 
+function shake($element, settings) {
+    var times = settings.times,
+        offset = settings.offset,
+        duration = (settings.duration / times) / 3,
+        animation0 = { left: '-=' + offset },
+        animation1 = { left: '+=' + (offset * 2) },
+        animation2 = { left: '-=' + (offset * 2) },
+        easing = 'swing', i;
+
+    // Take one step left <('-'<)
+    // (and one step right (>'-')>, one to the front and one to the side)
+    $element.animate(animation0, duration, easing);
+    // Shake, shake, shake!
+    for (i = 1; i < times; ++i) {
+        $element
+            // two to the right
+            .animate(animation1, duration, easing)
+            // two to the left
+            .animate(animation2, duration, easing);
+    }
+    $element
+        // two more to the right
+        .animate(animation1, duration, easing)
+        // and one to the left, to return to where we started.
+        .animate(animation0, duration, easing);
+}
+
+
+function newScoreModifierPool() {
+    var pool = [], pos = -1, len = 10, i;
+    
+    for (i = 1; i <= len; ++i) {
+        pool.push($('<div class="score-modifier"></div>'));
+    }
+    
+    return {
+        get: function() {
+            pos = (pos + 1) % len;
+            return pool[pos];
+        }
+    };
+}
+
+var scoreModifierPool = newScoreModifierPool();
+
+function complete() {
+    /*jshint validthis: true */
+    $(this).remove();
+}
+
+function scoreEffect(modifier) {
+    var $scoreModifier = scoreModifierPool.get(),
+        $scoreDiv = $('#score'),
+        $scoreSpan = $scoreDiv.children(),
+        scoreOffset = $scoreSpan.offset();
+
+    $scoreModifier
+        .text(modifier)
+        .appendTo($scoreDiv.parent())
+        .offset({
+            top: scoreOffset.top +
+                // Randomize it a bit.
+                (0 + Math.floor(Math.random() * 9)),
+            left: scoreOffset.left + ($scoreSpan.width() - $scoreModifier.width())/2 +
+                // Randomize it a bit.
+                (-5 + Math.floor(Math.random() * 11))
+        })
+        .animate({ top: '+=10'}, 500, complete);
+}
+
 /******************************* Local Storage ********************************/
 
 // https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Storage
@@ -268,7 +344,7 @@ function invertCell($cell) {
  * The version number. Useful for marking changes in the storage format.
  * @const {string}
  */
-var VERSION = '1.0.0';
+var VERSION = '1.1.0';
 
 /**
  * Storage keys.
@@ -284,7 +360,10 @@ var keys = {
     TIME: 'time',
     BEST_TIME: 'best_time',
     MOVE_COUNT: 'move_count',
-    BEST_MOVE_COUNT: 'best_move_count'
+    BEST_MOVE_COUNT: 'best_move_count',
+    SCORE: 'score',
+    HIGH_SCORE: 'high_score',
+    HAS_SHARED: 'has_shared'
 };
 
 
@@ -337,6 +416,13 @@ StorageManager.prototype.load = function load(key) {
     return window.localStorage.getItem(this.prefix + key);
 };
 
+StorageManager.prototype.saveTemp = function saveTemp(key, value) {
+    window.sessionStorage.setItem(this.prefix + key, value);
+};
+StorageManager.prototype.loadTemp = function loadTemp(key) {
+    return window.sessionStorage.getItem(this.prefix + key);
+};
+
 StorageManager.prototype.loadBest = function loadBest(key) {
     var best = this.load(key);
 
@@ -345,10 +431,13 @@ StorageManager.prototype.loadBest = function loadBest(key) {
     }
     return Number(best);
 };
+/**
+ * Saves the best (maximum) value for the key specified to storage.
+ */
 StorageManager.prototype.saveBest = function saveBest(key, value) {
     var best = this.loadBest(key);
 
-    if (best === null || value < best) {
+    if (best === null || value > best) {
         this.save(key, value);
     }
 };
@@ -390,18 +479,32 @@ StorageManager.prototype.saveMoveCount = function saveMoveCount(count) {
 StorageManager.prototype.loadMoveCount = function loadMoveCount() {
     return Number(this.load(keys.MOVE_COUNT));
 };
+StorageManager.prototype.saveScore = function saveScore(score) {
+    this.save(keys.SCORE, score);
+};
+StorageManager.prototype.loadScore = function loadScore() {
+    return Number(this.load(keys.SCORE));
+};
 
 StorageManager.prototype.saveBestTime = function saveBestTime(time) {
-    this.saveBest(this._getMode() + keys.BEST_TIME, time);
+    this.saveBest(this._getMode() + keys.BEST_TIME, -time);
 };
 StorageManager.prototype.loadBestTime = function loadBestTime() {
-    return this.loadBest(this._getMode() + keys.BEST_TIME);
+    var best = this.loadBest(this._getMode() + keys.BEST_TIME);
+    return (best !== null) ? -best : null;
 };
 StorageManager.prototype.saveBestMoveCount = function saveBestMoveCount(count) {
-    this.saveBest(this._getMode() + keys.BEST_MOVE_COUNT, count);
+    this.saveBest(this._getMode() + keys.BEST_MOVE_COUNT, -count);
 };
 StorageManager.prototype.loadBestMoveCount = function loadBestMoveCount() {
-    return this.loadBest(this._getMode() + keys.BEST_MOVE_COUNT);
+    var best = this.loadBest(this._getMode() + keys.BEST_MOVE_COUNT);
+    return (best !== null) ? -best : null;
+};
+StorageManager.prototype.saveHighScore = function saveHighScore(score) {
+    this.saveBest(this._getMode() + keys.HIGH_SCORE, score);
+};
+StorageManager.prototype.loadHighScore = function loadHighScore() {
+    return this.loadBest(this._getMode() + keys.HIGH_SCORE);
 };
 
 StorageManager.prototype.saveGrid = function saveGrid(grid) {
@@ -419,7 +522,14 @@ StorageManager.prototype.loadGame = function loadGame() {
 };
 
 StorageManager.prototype.hasSavedGame = function hasSavedGame() {
-    return (this.load(keys.GAME_SAVE) !== null);
+    return (this.load(keys.SCORE) !== null);
+};
+
+StorageManager.prototype.setHasShared = function setHasShared() {
+    this.saveTemp(keys.HAS_SHARED, true);
+};
+StorageManager.prototype.hasShared = function hasShared() {
+    return this.loadTemp(keys.HAS_SHARED) === 'true';
 };
 
 /************************************* op *************************************/
@@ -458,9 +568,13 @@ function updateTime(elapsedTime) {
 function updateCount(moveCount) {
     $('#move-count span').text(moveCount);
 }
-function updateStats(elapsedTime, moveCount) {
+function updateScore(score) {
+    $('#score span').text(score);
+}
+function updateStats(elapsedTime, moveCount, score) {
     updateTime(elapsedTime);
     updateCount(moveCount);
+    updateScore(score);
 }
 
 
@@ -476,15 +590,16 @@ var intervalId;
 
 op._start = function(newGame, opts) {
     var storage, grid, size, diagonal, circular, invertSelf, allNeighbors,
-        elapsedTime, moveCount;
+        elapsedTime, moveCount, score;
 
     if (newGame === undefined) newGame = true;
 
     function clearStats() {
         elapsedTime = 0;
         moveCount = 0;
+        score = 10000;
 
-        updateStats(elapsedTime, moveCount);
+        updateStats(elapsedTime, moveCount, score);
     }
 
     function resetTimer(storage) {
@@ -494,13 +609,20 @@ op._start = function(newGame, opts) {
         }
         // Start timer.
         intervalId = setInterval(function updateTimer() {
+            var scoreModifier = -1;
+
             updateTime(++elapsedTime);
             storage.saveTime(elapsedTime);
+            // Score decreases with each second passing by.
+            updateScore(score += scoreModifier);
+            storage.saveScore(score);
+            scoreEffect(scoreModifier);
         }, 1000);
     }
 
     function save() {
         storage.saveMoveCount(moveCount);
+        storage.saveScore(score);
         storage.saveGame($('#grid').html());
     }
 
@@ -509,8 +631,9 @@ op._start = function(newGame, opts) {
     if (!newGame && storage.hasSavedGame()) {
         elapsedTime = storage.loadTime();
         moveCount = storage.loadMoveCount();
+        score = storage.loadScore();
 
-        updateStats(elapsedTime, moveCount);
+        updateStats(elapsedTime, moveCount, score);
 
         size = storage.loadGridSize();
         diagonal = storage.loadDiagonal();
@@ -573,6 +696,8 @@ op._start = function(newGame, opts) {
         $('#best-time span').text((best !== null) ? formatTime(best) : 'N/A');
         best = storage.loadBestMoveCount();
         $('#best-move-count span').text((best !== null) ? best : 'N/A');
+        best = storage.loadHighScore();
+        $('#high-score span').text((best !== null) ? best : 'N/A');
     }(storage));
 
     resetTimer(storage);
@@ -606,14 +731,16 @@ op._start = function(newGame, opts) {
                 return false;
             },
             click: function onClick(event) {
-                var $cell = $(this), cellPos = getPos($cell),
-                    val = getNumber($cell), valid = false;
+                /*jshint bitwise: false */
+                var $cell = $(this), val = getNumber($cell), pos = getPos($cell),
+                    neighbors = allNeighbors[pos.i][pos.j], valid = false,
+                    i, scoreModifier, $msgs;
 
-                allNeighbors[cellPos.i][cellPos.j].forEach(function(pos, index) {
-                    /*jshint bitwise: false*/
+                for (i = 0; i < neighbors.length; ++i) {
+                    pos = neighbors[i];
                     valid |= updateCell(
                         $(makeCellSelector(pos.i, pos.j)), val, opts.operator);
-                });
+                }
 
                 if (invertSelf) {
                     invertCell($cell);
@@ -622,20 +749,42 @@ op._start = function(newGame, opts) {
 
                 if (valid) {
                     updateCount(++moveCount);
+                    // Score decreases with each move.
+                    scoreModifier = -100;
+                    updateScore(score += scoreModifier);
+                    scoreEffect(scoreModifier);
                     save();
+                } else {
+                    // Shaky effect for invalid moves.
+                    shake($(event.delegateTarget), {
+                        times: 12,
+                        offset: 1,
+                        duration: 600
+                    });
                 }
 
                 // If all (visible) cells contain '1'
                 if ($cells.filter('.one').length === size * size) {
                     // Stop the timer.
                     clearInterval(intervalId);
+                    $('#final-score').text(score);
+                    // Choose a random message to show.
+                    if (storage.loadHighScore() < score) {      // New high score!
+                        $msgs = $('#win-msg-container > .high-score-msg').hide();
+                        $msgs.eq(Math.floor(Math.random() * $msgs.length)).show();
+                    } else {
+                        $msgs = $('#win-msg-container > .share-msg').hide();
+                        $msgs.eq(Math.floor(Math.random() * $msgs.length)).show();
+                    }
                     // You Win!
                     $('#win-screen').fadeIn(750, 'linear');
-                    // Update best time and move count, if necessary.
+                    // Update best time, move count and score, if necessary.
                     storage.saveBestTime(elapsedTime);
                     $('#best-time span').text(formatTime(storage.loadBestTime()));
                     storage.saveBestMoveCount(moveCount);
                     $('#best-move-count span').text(storage.loadBestMoveCount());
+                    storage.saveHighScore(score);
+                    $('#high-score span').text(storage.loadHighScore());
                 }
 
                 // The mouseleave event does not fire after clicks on mobile.

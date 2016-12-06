@@ -14,11 +14,11 @@ a {
     font-weight: bold;
 }
 button, .button {
-    min-width: 150px;
-    line-height: 40px;
+    min-width: 144px;
+    line-height: 38px;
     cursor: pointer;
 
-    font-size: 1.15em;
+    font-size: 1.1em;
     font-weight: bold;
     color: #46a6ea;
     background-color: #282828;
@@ -115,6 +115,7 @@ input[type='radio']:checked + label > span{
 }
 
 .button {
+    font-size: 1em;
     color: #fcf8fa;
     background-color: #3998d6;
     border: 1px solid #3998d6;
@@ -146,11 +147,14 @@ input[type='radio']:checked + label > span{
             border-radius: 6px;
 }
 #grid {
+    position: relative;         /* For shaking. */
     width: 100%;
     border-spacing: 15px;
 }
 #win-screen {
     display: none;
+    /* Above all else. */
+    z-index: 1;
     /* Stretch it. */
     position: absolute;
     top: 0;
@@ -164,7 +168,7 @@ input[type='radio']:checked + label > span{
        -moz-box-shadow: 0px 0px 25px 8px rgba(255, 226, 36, 0.75);
             box-shadow: 0px 0px 25px 8px rgba(255, 226, 36, 0.75);
 }
-#win-screen > div {
+#win-screen > .center {
     /* Center it. */
     position: absolute;
     top: 50%;
@@ -172,12 +176,17 @@ input[type='radio']:checked + label > span{
     transform: translate(-50%, -50%);
 }
 #win-screen .start-restart button {
-    margin: 10px 0px 25px;
+    margin: 15px 0px 20px;
 }
 #win {
-    min-width: 350px;
+    min-width: 450px;
     color: #f2f0f5;
     font-size: 75px;
+    font-weight: bold;
+}
+#win-msg-container > div {
+    display: none;
+    font-size: 1.18em;
     font-weight: bold;
 }
 
@@ -186,9 +195,9 @@ input[type='radio']:checked + label > span{
     font-weight: bold;
 }
 #description {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
-#instructions span {
+.first, .second, .third {
     padding: 0px 5px;
     border: 1px solid rgba(40, 40, 40, 0.25);
     -webkit-border-radius: 3px;
@@ -198,12 +207,12 @@ input[type='radio']:checked + label > span{
        -moz-box-shadow: 0px 0px 1px 0px rgba(40, 40, 40, 0.25);
             box-shadow: 0px 0px 1px 0px rgba(40, 40, 40, 0.25);
 }
-#instructions .first {
+.first {
     color: #3998d6;
     /* Midpoint between #f2f0f5 and #fefdfd */
     background-color: #f8f7f9;
 }
-#instructions .second, #instructions .third {
+.second, .third {
     color: #3a3a3a;
     background-color: rgba(255, 226, 36, 0.6);
 }
@@ -227,8 +236,17 @@ input[type='radio']:checked + label > span{
     display: block;
 }
 #stats {
+    position: relative;         /* For the score modifier effect. */
     float: right;
     margin-right: 12px;
+}
+.score-modifier {
+    position: absolute;
+    z-index: 10;
+
+    color: rgba(50, 50, 50, 0.9);
+    font-size: 1.25em;
+    font-weight: bold;
 }
 #start-restart button:first-child, #stats > div:first-child {
     margin-bottom: 5px;
@@ -244,6 +262,10 @@ input[type='radio']:checked + label > span{
 }
 #social {
     margin: 3px 0px 20px;
+}
+#social a {
+    /* Hide text of FB share button until the plugin has loaded. */
+    color: #f2f0f5;
 }
 #social > div {
     vertical-align: top;
@@ -267,7 +289,7 @@ input[type='radio']:checked + label > span{
     cursor: pointer;
     color: #3998d6;
     background-color: #505050;
-    font-size: 55px;
+    font-size: 50px;
     font-weight: bold;
     text-align: center;
 
