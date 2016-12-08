@@ -295,11 +295,11 @@ function shake($element, settings) {
 
 function newScoreModifierPool() {
     var pool = [], pos = -1, len = 10, i;
-    
+
     for (i = 1; i <= len; ++i) {
         pool.push($('<div class="score-modifier"></div>'));
     }
-    
+
     return {
         get: function() {
             pos = (pos + 1) % len;
@@ -755,6 +755,10 @@ op._start = function(newGame, opts) {
                     scoreEffect(scoreModifier);
                     save();
                 } else {
+                    $('#note')
+                        // Take care of clicks in quick succesion.
+                        .finish()
+                        .fadeIn('slow').delay(750).fadeOut('slow');
                     // Shaky effect for invalid moves.
                     shake($(event.delegateTarget), {
                         times: 12,
@@ -787,8 +791,6 @@ op._start = function(newGame, opts) {
                     $('#high-score span').text(storage.loadHighScore());
                 }
 
-                // The mouseleave event does not fire after clicks on mobile.
-                $cell.trigger('mouseleave');
                 return false;
             }
         }, '.cell');

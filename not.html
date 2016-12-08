@@ -19,12 +19,12 @@
         <meta property="og:title" content="xor" />
         <meta property="og:site_name" content="xor" />
         <meta property="og:image" content="https://import-this.github.io/xor/img/wallpaper.png" />
-        <meta property="og:description" content="Convert all cells to 1's - #not" />
+        <meta property="og:description" content="Convert all 0's to 1's - #not" />
 
         <!-- Google Search Console verification method. -->
         <meta name="google-site-verification" content="l3FLvijRzmzAxnDb7k-KtuYtiKbbELUQLsvJUs1YOs0" />
 
-        <title>not - Convert all cells to 1's</title>
+        <title>not - Convert all 0's to 1's</title>
 
         <link rel="stylesheet" type="text/css" href="css/xor.css">
         <style type="text/css">
@@ -67,18 +67,18 @@
             <header id="header">
                 <h1 id="not">not</h1>
                 <div id="description">
-                    <p id="instructions">
-                        The <strong>not</strong> operation flips <strong>0</strong>'s and <strong>1</strong>'s:<br/>
-                        <strong id="rules">
-                            not <span class="second">0</span> = <span class="third">1</span>,
-                            not <span class="second">1</span> = <span class="third">0</span>
-                        </strong>
-                        <br/>
-                        When you <strong>click</strong> on a <span class="first">_</span> cell,
-                        then each value in itself and in its neigboring <span class="second">_</span> cells 
-                        gets flipped (0's become 1's, 1's become 0's).<br/>
-                        <strong id="goal">Convert all cells to 1's.</strong>
-                    </p>
+                    <div id="instructions">
+                        <p id="rules">
+                            When you <strong>click</strong> on
+                            <span class="first">0</span> (or <span class="first">1</span>),
+                            it becomes <span class="first">1</span> (or <span class="first">0</span>)
+                            and its neigboring
+                            <span class="second">0</span>'s (or <span class="second">1</span>'s) become
+                            <span class="second">1</span>'s (or <span class="second">0</span>'s)<br/>
+                            (meaning everything gets flipped).
+                        </p>
+                        <strong id="goal">Convert all 0's to 1's.</strong>
+                    </div>
                 </div>
                 <div id="options">
                     <div id="checkboxes">
@@ -143,6 +143,9 @@
                             <div class="fb-share-button" data-href="https://import-this.github.io/xor/not.html" data-layout="button" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fimport-this.github.io%2Fxor%2Fnot.html&amp;src=sdkpreparse">Share</a></div>
                         </div>
                     </div>
+                </div>
+                <div id="note">
+                    Null move
                 </div>
                 <div id="grid-container">
                     <table id="grid">

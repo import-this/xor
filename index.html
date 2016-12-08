@@ -19,12 +19,12 @@
         <meta property="og:title" content="xor" />
         <meta property="og:site_name" content="xor" />
         <meta property="og:image" content="https://import-this.github.io/xor/img/wallpaper.png" />
-        <meta property="og:description" content="Convert all cells to 1's - #xor" />
+        <meta property="og:description" content="Convert all 0's to 1's - #xor" />
 
         <!-- Google Search Console verification method. -->
         <meta name="google-site-verification" content="l3FLvijRzmzAxnDb7k-KtuYtiKbbELUQLsvJUs1YOs0" />
 
-        <title>xor - Convert all cells to 1's</title>
+        <title>xor - Convert all 0's to 1's</title>
 
         <link rel="stylesheet" type="text/css" href="css/xor.css">
         <!-- A bit of custom CSS for this puzzle. -->
@@ -68,22 +68,15 @@
             <header id="header">
                 <h1 id="xor">xor</h1>
                 <div id="description">
-                    <p id="instructions">
-                        The <strong>xor</strong> operation combines <strong>0</strong>'s and <strong>1</strong>'s as follows:<br/>
-                        <strong id="rules">
-                            <span class="first">0</span> xor <span class="second">0</span> = <span class="third">0</span>,
-                            <span class="first">0</span> xor <span class="second">1</span> = <span class="third">1</span>,
-                            <span class="first">1</span> xor <span class="second">0</span> = <span class="third">1</span>,
-                            <span class="first">1</span> xor <span class="second">1</span> = <span class="third">0</span>
-                        </strong>
-                        <br/>
-                        When you <strong>click</strong> on a <span class="first">_</span> cell,
-                        then <strong>each</strong> <span class="second">_</span> cell
-                        is updated by combining the two cells according to the
-                        <span class="first">_</span> <strong>xor</strong> <span class="second">_</span>
-                        rules.<br/>
-                        <strong id="goal">Convert all cells to 1's.</strong>
-                    </p>
+                    <div id="instructions">
+                        <p id="rules">
+                            When you <strong>click</strong> on <span class="first">1</span>, its neighboring<br/>
+                            <span class="second">0</span>'s become <span class="second">1</span>'s and
+                            <span class="second">1</span>'s become <span class="second">0</span>'s.<br/>
+                            When you <strong>click</strong> on <span class="first">0</span>, nothing happens.
+                        </p>
+                        <strong id="goal">Convert all 0's to 1's.</strong>
+                    </div>
                 </div>
                 <div id="options">
                     <div id="checkboxes">
@@ -146,6 +139,9 @@
                             <div class="fb-share-button" data-href="https://import-this.github.io/xor/" data-layout="button" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fimport-this.github.io%2Fxor%2F&amp;src=sdkpreparse">Share</a></div>
                         </div>
                     </div>
+                </div>
+                <div id="note">
+                    Null move
                 </div>
                 <div id="grid-container">
                     <table id="grid">

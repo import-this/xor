@@ -154,7 +154,7 @@ input[type='radio']:checked + label > span{
 #win-screen {
     display: none;
     /* Above all else. */
-    z-index: 1;
+    z-index: 100;
     /* Stretch it. */
     position: absolute;
     top: 0;
@@ -189,6 +189,26 @@ input[type='radio']:checked + label > span{
     font-size: 1.18em;
     font-weight: bold;
 }
+#note {
+    display: none;
+    z-index: 20;
+
+    position: absolute;
+    top: -35px;
+    left: 0px;
+    right: 0px;
+
+    padding: 6px 14px;
+    font-weight: bold;
+    /* background-color: #edc22e */
+    background-color: rgba(255, 226, 36, 0.95);
+    -webkit-box-shadow: 0px 0px 1px 0px rgba(255, 226, 36, 0.75);
+       -moz-box-shadow: 0px 0px 1px 0px rgba(255, 226, 36, 0.75);
+            box-shadow: 0px 0px 1px 0px rgba(255, 226, 36, 0.75);
+    -webkit-border-radius: 6px;
+       -moz-border-radius: 6px;
+            border-radius: 6px;
+}
 
 #xor, #xnor, #nand, #not {
     font-size: 85px;
@@ -216,9 +236,6 @@ input[type='radio']:checked + label > span{
     color: #3a3a3a;
     background-color: rgba(255, 226, 36, 0.6);
 }
-#rules {
-    letter-spacing: -1px;
-}
 #options {
     margin-bottom: 12px;
 }
@@ -230,7 +247,7 @@ input[type='radio']:checked + label > span{
 }
 #start-restart {
     float: left;
-    margin-left: 12px;
+    margin-left: 14px;
 }
 #start-restart button {
     display: block;
@@ -238,7 +255,7 @@ input[type='radio']:checked + label > span{
 #stats {
     position: relative;         /* For the score modifier effect. */
     float: right;
-    margin-right: 12px;
+    margin-right: 14px;
 }
 .score-modifier {
     position: absolute;
