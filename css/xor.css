@@ -178,6 +178,10 @@ input[type='radio']:checked + label > span{
 #win-screen .start-restart button {
     margin: 15px 0px 20px;
 }
+#win-screen .social > iframe {
+    /* Fix Twitter button. */
+    vertical-align: bottom;
+}
 #win {
     min-width: 450px;
     color: #f2f0f5;
