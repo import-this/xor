@@ -218,7 +218,7 @@ input[type='radio']:checked + label > span{
     font-size: 85px;
     font-weight: bold;
 }
-#description {
+#description, #radios {
     margin-bottom: 5px;
 }
 .first, .second, .third {
@@ -241,13 +241,10 @@ input[type='radio']:checked + label > span{
     background-color: rgba(255, 226, 36, 0.6);
 }
 #options {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 #options label {
     margin: 0px 10px 0px 4px;
-}
-#checkboxes {
-    margin-bottom: 5px;
 }
 #start-restart {
     float: left;

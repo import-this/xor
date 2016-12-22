@@ -29,7 +29,7 @@
         <link rel="stylesheet" type="text/css" href="css/xor.css">
         <!-- A bit of custom CSS for this puzzle. -->
         <style type="text/css">
-            #circular + label, #radios {
+            #circular + label {
                 display: none;
             }
         </style>
@@ -81,12 +81,6 @@
                     </div>
                 </div>
                 <div id="options">
-                    <div id="checkboxes">
-                        <input id="diagonal" type="checkbox" name="neighborhood" value="diagonal">
-                        <label for="diagonal"><span></span>Include diagonal neighbors</label>
-                        <input id="circular" type="checkbox" name="neighborhood" value="circular" checked>
-                        <label for="circular"><span></span>Circular</label>
-                    </div>
                     <div id="radios">
                         <input id="four" type="radio" name="grid-size" value="4">
                         <label for="four"><span></span>4 x 4</label>
@@ -94,6 +88,12 @@
                         <label for="five"><span></span>5 x 5</label>
                         <input id="six" type="radio" name="grid-size" value="6" checked>
                         <label for="six"><span></span>6 x 6</label>
+                    </div>
+                    <div id="checkboxes">
+                        <input id="diagonal" type="checkbox" name="neighborhood" value="diagonal">
+                        <label for="diagonal"><span></span>Include diagonal neighbors</label>
+                        <input id="circular" type="checkbox" name="neighborhood" value="circular" checked>
+                        <label for="circular"><span></span>Circular</label>
                     </div>
                 </div>
                 <div>
