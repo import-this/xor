@@ -316,13 +316,15 @@ input[type='radio']:checked + label > span{
          -o-transition-duration: 0.1s;
             transition-duration: 0.1s;
 }
-.cell:hover {
-    color: #3998d6;
-    background-color: #fefdfd;
-}
+/* Place the '.one' rule first, so that the '.active' rule overrides it. */
 .one {
     color: #fefdfd;
     background-color: #3998d6;
+}
+/* Use .active for mobile. */
+.cell:hover, .active {
+    color: #3998d6;
+    background-color: #fefdfd;
 }
 .neighbor {
     color: #3a3a3a;

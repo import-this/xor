@@ -23,7 +23,7 @@
  */
 
 /*globals jQuery */
-(function($, window) {
+(function($, window, document) {
 
 "use strict";
 
@@ -714,85 +714,154 @@ op._start = function(newGame, opts) {
         }
 
         // Cache the cells.
-        var $cells = $('.cell').filter(':visible');
+        var $cells = $('.cell').filter(':visible'),
+            element = null;
+
+        function onMouseEnter() {
+            var thisPos = getPos($(this));
+
+            allNeighbors[thisPos.i][thisPos.j].forEach(markNeighbor);
+            return false;
+        }
+
+        function onMouseLeave() {
+            var thisPos = getPos($(this));
+
+            allNeighbors[thisPos.i][thisPos.j].forEach(unmarkNeighbor);
+            return false;
+        }
+
+        function onClick(event) {
+            /*jshint bitwise: false */
+            var $cell = $(this), val = getNumber($cell), pos = getPos($cell),
+                neighbors = allNeighbors[pos.i][pos.j], valid = false,
+                i, scoreModifier, $msgs;
+
+            for (i = 0; i < neighbors.length; ++i) {
+                pos = neighbors[i];
+                valid |= updateCell(
+                    $(makeCellSelector(pos.i, pos.j)), val, opts.operator);
+            }
+
+            if (invertSelf) {
+                invertCell($cell);
+                valid = true;
+            }
+
+            if (valid) {
+                updateCount(++moveCount);
+                // Score decreases with each move.
+                scoreModifier = -100;
+                updateScore(score += scoreModifier);
+                scoreEffect(scoreModifier);
+                save();
+            } else {
+                $('#note')
+                    // Take care of clicks in quick succesion.
+                    .finish()
+                    .fadeIn('slow').delay(750).fadeOut('slow');
+                // Shaky effect for invalid moves.
+                shake($(event.delegateTarget), {
+                    times: 12,
+                    offset: 1,
+                    duration: 600
+                });
+            }
+
+            // If all (visible) cells contain '1'
+            if ($cells.filter('.one').length === size * size) {
+                // Stop the timer.
+                clearInterval(intervalId);
+                $('#final-score').text(score);
+                // Choose a random message to show.
+                $('#win-msg-container > .div').hide();
+                if (storage.loadHighScore() < score) {      // New high score!
+                    $msgs = $('#win-msg-container > .high-score-msg');
+                    $msgs.eq(Math.floor(Math.random() * $msgs.length)).show();
+                } else {
+                    $msgs = $('#win-msg-container > .share-msg');
+                    $msgs.eq(Math.floor(Math.random() * $msgs.length)).show();
+                }
+                // You Win!
+                $('#win-screen').fadeIn(750, 'linear');
+                // Update best time, move count and score, if necessary.
+                storage.saveBestTime(elapsedTime);
+                $('#best-time span').text(formatTime(storage.loadBestTime()));
+                storage.saveBestMoveCount(moveCount);
+                $('#best-move-count span').text(storage.loadBestMoveCount());
+                storage.saveHighScore(score);
+                $('#high-score span').text(storage.loadHighScore());
+            }
+
+            return false;
+        }
 
         // Note that we remove any previous handlers.
         $('#grid').off().on({
-            mouseenter: function onMouseenter(event) {
-                var thisPos = getPos($(this));
+            mouseenter: onMouseEnter,
+            mouseleave: onMouseLeave,
+            click: onClick,
+            touchstart: function onTouchStart(event) {
+                // Prevent the browser from firing simulated click events.
+                event.preventDefault();
 
-                allNeighbors[thisPos.i][thisPos.j].forEach(markNeighbor);
-                return false;
+                // Only allow one-touch gestures.
+                if (event.touches.length > 1) {
+                    return;
+                }
+
+                element = this;
+                onMouseEnter.call(this);
+                $(this).addClass('active');
             },
-            mouseleave: function onMouseleave(event) {
-                var thisPos = getPos($(this));
+            // touchmove/end events always refer to the same element as touchstart,
+            // so simulate the mousemove event with clientX/Y and elementFromPoint.
+            touchmove: function onTouchMove(event) {
+                var touch, newElement;
 
-                allNeighbors[thisPos.i][thisPos.j].forEach(unmarkNeighbor);
-                return false;
-            },
-            click: function onClick(event) {
-                /*jshint bitwise: false */
-                var $cell = $(this), val = getNumber($cell), pos = getPos($cell),
-                    neighbors = allNeighbors[pos.i][pos.j], valid = false,
-                    i, scoreModifier, $msgs;
+                // Prevent the browser from scrolling the page.
+                event.preventDefault();
 
-                for (i = 0; i < neighbors.length; ++i) {
-                    pos = neighbors[i];
-                    valid |= updateCell(
-                        $(makeCellSelector(pos.i, pos.j)), val, opts.operator);
+                // Only allow one-touch gestures.
+                if (event.touches.length > 1) {
+                    return;
                 }
 
-                if (invertSelf) {
-                    invertCell($cell);
-                    valid = true;
-                }
-
-                if (valid) {
-                    updateCount(++moveCount);
-                    // Score decreases with each move.
-                    scoreModifier = -100;
-                    updateScore(score += scoreModifier);
-                    scoreEffect(scoreModifier);
-                    save();
-                } else {
-                    $('#note')
-                        // Take care of clicks in quick succesion.
-                        .finish()
-                        .fadeIn('slow').delay(750).fadeOut('slow');
-                    // Shaky effect for invalid moves.
-                    shake($(event.delegateTarget), {
-                        times: 12,
-                        offset: 1,
-                        duration: 600
-                    });
-                }
-
-                // If all (visible) cells contain '1'
-                if ($cells.filter('.one').length === size * size) {
-                    // Stop the timer.
-                    clearInterval(intervalId);
-                    $('#final-score').text(score);
-                    // Choose a random message to show.
-                    $('#win-msg-container > .div').hide();
-                    if (storage.loadHighScore() < score) {      // New high score!
-                        $msgs = $('#win-msg-container > .high-score-msg');
-                        $msgs.eq(Math.floor(Math.random() * $msgs.length)).show();
-                    } else {
-                        $msgs = $('#win-msg-container > .share-msg');
-                        $msgs.eq(Math.floor(Math.random() * $msgs.length)).show();
+                // Use jQuery's originalEvent property to get the touch event!
+                touch = event.originalEvent.changedTouches[0];
+                newElement = document.elementFromPoint(touch.clientX, touch.clientY);
+                // The player moved to a different cell.
+                if (newElement !== element) {
+                    if (element) {
+                        onMouseLeave.call(element);
+                        $(element).removeClass('active');
                     }
-                    // You Win!
-                    $('#win-screen').fadeIn(750, 'linear');
-                    // Update best time, move count and score, if necessary.
-                    storage.saveBestTime(elapsedTime);
-                    $('#best-time span').text(formatTime(storage.loadBestTime()));
-                    storage.saveBestMoveCount(moveCount);
-                    $('#best-move-count span').text(storage.loadBestMoveCount());
-                    storage.saveHighScore(score);
-                    $('#high-score span').text(storage.loadHighScore());
+                    if ($(newElement).hasClass('cell')) {
+                        onMouseEnter.call(newElement);
+                        $(newElement).addClass('active');
+                        element = newElement;
+                    } else {
+                        element = null;
+                    }
+                }
+            },
+            touchend: function onTouchEnd(event) {
+                event.preventDefault();
+
+                // Ignore if still touching the surface.
+                if (event.touches.length > 0) {
+                    return;
                 }
 
-                return false;
+                if (element) {
+                    onClick.call(element, event);
+                    onMouseLeave.call(element);
+                    $(element).removeClass('active');
+                    element = null;
+                }
+
+                // http://stackoverflow.com/a/27286193/1751037
+                return true;
             }
         }, '.cell');
     }(storage, size, diagonal, circular, invertSelf, allNeighbors));
@@ -842,4 +911,4 @@ $(window).resize(square);
 // Expose;
 window.op = op;
 
-}(jQuery, window));
+}(jQuery, window, document));
