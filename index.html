@@ -27,12 +27,6 @@
         <title>xor - Convert all 0's to 1's</title>
 
         <link rel="stylesheet" type="text/css" href="css/xor.css">
-        <!-- A bit of custom CSS for this puzzle. -->
-        <style type="text/css">
-            #circular + label {
-                display: none;
-            }
-        </style>
 
         <!-- jQuery from jQuery CDN with Subresource Integrity (SRI) checking. -->
         <script src="https://code.jquery.com/jquery-3.1.1.min.js"
@@ -88,10 +82,10 @@
                         <label for="six"><span></span>6 x 6</label>
                     </div>
                     <div id="checkboxes">
+                        <input id="circular" type="checkbox" name="neighborhood" value="circular" checked>
+                        <label for="circular"><span></span>Wrap around at the edges</label>
                         <input id="diagonal" type="checkbox" name="neighborhood" value="diagonal">
                         <label for="diagonal"><span></span>Include diagonal neighbors</label>
-                        <input id="circular" type="checkbox" name="neighborhood" value="circular" checked>
-                        <label for="circular"><span></span>Circular</label>
                     </div>
                 </div>
                 <div>
