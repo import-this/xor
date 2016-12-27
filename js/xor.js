@@ -774,7 +774,7 @@ op._start = function(newGame, opts) {
                 clearInterval(intervalId);
                 $('#final-score').text(score);
                 // Choose a random message to show.
-                $('#win-msg-container > .div').hide();
+                $('#win-msg-container > div').hide();
                 if (storage.loadHighScore() < score) {      // New high score!
                     $msgs = $('#win-msg-container > .high-score-msg');
                     $msgs.eq(Math.floor(Math.random() * $msgs.length)).show();
