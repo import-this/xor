@@ -173,7 +173,11 @@ input[type='radio']:checked + label > span{
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+       -moz-transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+         -o-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
 }
 #win-screen .start-restart button {
     margin: 15px 0px 20px;
@@ -282,7 +286,7 @@ input[type='radio']:checked + label > span{
     margin: 3px 0px 20px;
 }
 #social a {
-    /* Hide text of FB share button until the plugin has loaded. */
+    /* Hide text of FB share and Twitter buttons until the plugins have loaded. */
     color: #f2f0f5;
 }
 #social > div {
