@@ -868,6 +868,17 @@ op._start = function(newGame, opts) {
 };
 
 op.start = function(options) {
+    // Show the annotation sometimes.
+    if (Math.random() < 0.75) {
+        $('#annotation')
+            .delay(1500)
+            .slideDown('slow')
+            .find('.close-button')
+                .click(function() {
+                    $(this).parent().slideUp('slow');
+                });
+    }
+
     function startGame(newGame) {
         // Initially hide the fifth and sixth row/column
         $('.five, .six').hide();
