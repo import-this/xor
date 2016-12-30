@@ -347,7 +347,7 @@ input[type='radio']:checked + label > span{
     cursor: pointer;
     color: #3998d6;
     background-color: #505050;
-    font-size: 50px;
+    font-size: 55px;
     font-weight: bold;
     text-align: center;
 
@@ -372,4 +372,25 @@ input[type='radio']:checked + label > span{
 }
 .five, .six {
     display: none;
+}
+
+/* Custom styling for small screens. */
+@media (max-width: 580px) {
+    #container {
+        min-width: 420px;
+        padding: 0 2.5%;
+    }
+    .start-button, .restart-button, .buttonlike {
+        min-width: 122px;
+        line-height: 35px;
+    }
+    .start-button, .restart-button {
+        font-size: 1em;
+    }
+    .buttonlike {
+        font-size: 0.88em;
+    }
+    .cell {
+        font-size: 45px;
+    }
 }
