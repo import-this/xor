@@ -1,5 +1,5 @@
 /**
- * xor
+ * XOR
  * https://import-this.github.io/xor
  *
  * A small collection of simple logic puzzle games - #xor.
