@@ -46,295 +46,6 @@ var log = (function() {
     return function noop() {};
 }());
 
-/************************************ Utils ***********************************/
-
-/****** String ******/
-
-function pad(str) {
-    str = String(str);
-    // http://stackoverflow.com/a/5366862/1751037
-    return ('00' + str).substring(str.length);
-}
-
-function formatTime(elapsedTimeSecs) {
-    return pad(Math.floor(elapsedTimeSecs / 60)) + ':' + pad(elapsedTimeSecs % 60);
-}
-
-/****** Arrays ******/
-
-/**
- * Shallow-copies a 1D array.
- */
-function copy1d(arr) {
-    return arr.slice();
-}
-/**
- * Shallow-copies a 2D array.
- */
-function copy2d(array) {
-    return array.map(copy1d);
-}
-
-/**
- * Fisher-Yates-Durstenfeld shuffle.
- */
-function shuffle(array) {
-    var i, j, temp;
-
-    for (i = array.length - 1; i > 0; --i) {
-        j = Math.floor(Math.random() * (i + 1));
-
-        temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-    }
-}
-
-/****** Grid ******/
-
-function getAllNeighbors(size, diagonal, circular) {
-    function addNeighbor(neighbors, size, circular, i, j) {
-        if (circular) {
-            // Wrap the values around. Note the behavior of the % operator.
-            i = (i + size) % size;
-            j = (j + size) % size;
-        } else {
-            if (i < 0 || j < 0 || i >= size || j >= size)
-                return;
-        }
-        neighbors.push({i: i, j: j});
-    }
-
-    function getNeighbors(i, j, size, diagonal, circular) {
-        var neighbors = [];
-
-        // Up
-        addNeighbor(neighbors, size, circular, i - 1, j);
-        // Down
-        addNeighbor(neighbors, size, circular, i + 1, j);
-        // Left
-        addNeighbor(neighbors, size, circular, i, j - 1);
-        // Right
-        addNeighbor(neighbors, size, circular, i, j + 1);
-        if (diagonal) {
-            // Up-left
-            addNeighbor(neighbors, size, circular, i - 1, j - 1);
-            // Up-right
-            addNeighbor(neighbors, size, circular, i - 1, j + 1);
-            // Down-left
-            addNeighbor(neighbors, size, circular, i + 1, j - 1);
-            // Down-right
-            addNeighbor(neighbors, size, circular, i + 1, j + 1);
-        }
-        return neighbors;
-    }
-
-    var neighbors = [], i, j;
-
-    for (i = 0; i < size; ++i) {
-        neighbors.push([]);
-        for (j = 0; j < size; ++j) {
-            neighbors[i].push(getNeighbors(i, j, size, diagonal, circular));
-        }
-    }
-
-    return neighbors;
-}
-
-function newRandomGrid(size) {
-    var grid = [], i, j;
-
-    // Generate a random grid.
-    for (i = 0; i < size; ++i) {
-        grid.push([]);
-        for (j = 0; j < size; ++j) {
-            grid[i].push((Math.random() < 0.6) ? 0 : 1);
-        }
-    }
-    return grid;
-}
-
-function newSolvableGrid(size, allNeighbors, operator, invertSelf) {
-    var grid = [], moves = [], moveCount = 0, i, j, k, pos, valid, copy;
-
-    // Generate a solved grid and a list of unique moves.
-    for (i = 0; i < size; ++i) {
-        grid.push([]);
-        for (j = 0; j < size; ++j) {
-            grid[i].push(1);
-            moves.push(i*size + j);
-        }
-    }
-
-    // From the solved grid, move some steps back.
-    // This guarantees a solvable configuration.
-    function undoMove(pos, index) {
-        /*jshint bitwise: false */
-        var oldVal = grid[pos.i][pos.j],
-            newVal = operator(grid[i][j], oldVal);
-
-        grid[pos.i][pos.j] = newVal;
-        valid |= (newVal !== oldVal);
-    }
-
-    shuffle(moves);
-    // Number of moves to roll back.
-    k = 10 + 5*(size - 4);
-    moves.length = k;
-    for (k = k - 1; k >= 0; --k) {
-        pos = moves[k];
-        i = Math.floor(pos / size);
-        j = pos % size;
-
-        valid = false;
-        allNeighbors[i][j].forEach(undoMove);
-        if (invertSelf) {
-            grid[i][j] = Number(!grid[i][j]);
-            valid = true;
-        }
-
-        if (valid) {
-            ++moveCount;
-        }
-    }
-
-
-    if (DEBUG) {
-        log(moves.length + ' moves');
-        log(moves);
-        log(moveCount);
-
-        // Replay the moves to make sure the puzzle is sound.
-        // NOTE: This only works for xor and not.
-        copy = copy2d(grid);
-        moves.forEach(function(move, index) {
-            var i = Math.floor(move / size),
-                j = move % size;
-
-            allNeighbors[i][j].forEach(function move(pos, index) {
-                copy[pos.i][pos.j] = operator(copy[i][j], copy[pos.i][pos.j]);
-            });
-            if (invertSelf) {
-                copy[i][j] = Number(!copy[i][j]);
-            }
-        });
-        for (i = 0; i < size; ++i)
-            for (j = 0; j < size; ++j)
-                if (copy[i][j] !== 1)
-                    log('Invalid puzzle construction!');
-    }
-
-    return grid;
-}
-
-/****** jQuery ******/
-
-function getNumber($cell) {
-    return parseInt($cell.text(), 10);
-}
-
-function setNumber($cell, number) {
-    $cell.text(number);
-}
-
-/**
- * Marks the specified cell, according to the value provided.
- */
-function markCell($cell, val) {
-    $cell.toggleClass('one', (val === 1));
-}
-
-/**
- * @return {boolean} - true, if the cell changed
- */
-function updateCell($cell, val, operator) {
-    var otherVal = getNumber($cell),
-        res = operator(val, otherVal);
-
-    setNumber($cell, res);
-    markCell($cell, res);
-
-    return (res !== otherVal);
-}
-
-function invertCell($cell) {
-    var val = getNumber($cell),
-        res = Number(!val);
-
-    setNumber($cell, res);
-    markCell($cell, res);
-}
-
-function shake($element, settings) {
-    var times = settings.times,
-        offset = settings.offset,
-        duration = (settings.duration / times) / 3,
-        animation0 = { left: '-=' + offset },
-        animation1 = { left: '+=' + (offset * 2) },
-        animation2 = { left: '-=' + (offset * 2) },
-        easing = 'swing', i;
-
-    // Take one step left <('-'<)
-    // (and one step right (>'-')>, one to the front and one to the side)
-    $element.animate(animation0, duration, easing);
-    // Shake, shake, shake!
-    for (i = 1; i < times; ++i) {
-        $element
-            // two to the right
-            .animate(animation1, duration, easing)
-            // two to the left
-            .animate(animation2, duration, easing);
-    }
-    $element
-        // two more to the right
-        .animate(animation1, duration, easing)
-        // and one to the left, to return to where we started.
-        .animate(animation0, duration, easing);
-}
-
-
-function newScoreModifierPool() {
-    var pool = [], pos = -1, len = 10, i;
-
-    for (i = 1; i <= len; ++i) {
-        pool.push($('<div class="score-modifier"></div>'));
-    }
-
-    return {
-        get: function() {
-            pos = (pos + 1) % len;
-            return pool[pos];
-        }
-    };
-}
-
-var scoreModifierPool = newScoreModifierPool();
-
-function complete() {
-    /*jshint validthis: true */
-    $(this).remove();
-}
-
-function scoreEffect(modifier) {
-    var $scoreModifier = scoreModifierPool.get(),
-        $scoreDiv = $('#score'),
-        $scoreSpan = $scoreDiv.children(),
-        scoreOffset = $scoreSpan.offset();
-
-    $scoreModifier
-        .text(modifier)
-        .appendTo($scoreDiv.parent())
-        .offset({
-            top: scoreOffset.top +
-                // Randomize it a bit.
-                (0 + Math.floor(Math.random() * 9)),
-            left: scoreOffset.left + ($scoreSpan.width() - $scoreModifier.width())/2 +
-                // Randomize it a bit.
-                (-5 + Math.floor(Math.random() * 11))
-        })
-        .animate({ top: '+=10'}, 500, complete);
-}
-
 /******************************* Local Storage ********************************/
 
 // https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Storage
@@ -344,7 +55,7 @@ function scoreEffect(modifier) {
  * The version number. Useful for marking changes in the storage format.
  * @const {string}
  */
-var VERSION = '1.1.0';
+var VERSION = '1.1.1';
 
 /**
  * Storage keys.
@@ -532,18 +243,309 @@ StorageManager.prototype.hasShared = function hasShared() {
     return this.loadTemp(keys.HAS_SHARED) === 'true';
 };
 
+/************************************ Utils ***********************************/
+
+/****** String ******/
+
+function pad(str) {
+    str = String(str);
+    // http://stackoverflow.com/a/5366862/1751037
+    return ('00' + str).substring(str.length);
+}
+
+function formatTime(elapsedTimeSecs) {
+    return pad(Math.floor(elapsedTimeSecs / 60)) + ':' + pad(elapsedTimeSecs % 60);
+}
+
+/****** Arrays ******/
+
+/**
+ * Shallow-copies a 1D array.
+ */
+function copy1d(arr) {
+    return arr.slice();
+}
+/**
+ * Shallow-copies a 2D array.
+ */
+function copy2d(array) {
+    return array.map(copy1d);
+}
+
+/**
+ * Fisher-Yates-Durstenfeld shuffle.
+ */
+function shuffle(array) {
+    var i, j, temp;
+
+    for (i = array.length - 1; i > 0; --i) {
+        j = Math.floor(Math.random() * (i + 1));
+
+        temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
+
+/****** Grid ******/
+
+function getAllNeighbors(size, diagonal, circular) {
+    function addNeighbor(neighbors, size, circular, i, j) {
+        if (circular) {
+            // Wrap the values around. Note the behavior of the % operator.
+            i = (i + size) % size;
+            j = (j + size) % size;
+        } else {
+            if (i < 0 || j < 0 || i >= size || j >= size)
+                return;
+        }
+        neighbors.push({i: i, j: j});
+    }
+
+    function getNeighbors(i, j, size, diagonal, circular) {
+        var neighbors = [];
+
+        // Up
+        addNeighbor(neighbors, size, circular, i - 1, j);
+        // Down
+        addNeighbor(neighbors, size, circular, i + 1, j);
+        // Left
+        addNeighbor(neighbors, size, circular, i, j - 1);
+        // Right
+        addNeighbor(neighbors, size, circular, i, j + 1);
+        if (diagonal) {
+            // Up-left
+            addNeighbor(neighbors, size, circular, i - 1, j - 1);
+            // Up-right
+            addNeighbor(neighbors, size, circular, i - 1, j + 1);
+            // Down-left
+            addNeighbor(neighbors, size, circular, i + 1, j - 1);
+            // Down-right
+            addNeighbor(neighbors, size, circular, i + 1, j + 1);
+        }
+        return neighbors;
+    }
+
+    var neighbors = [], i, j;
+
+    for (i = 0; i < size; ++i) {
+        neighbors.push([]);
+        for (j = 0; j < size; ++j) {
+            neighbors[i].push(getNeighbors(i, j, size, diagonal, circular));
+        }
+    }
+
+    return neighbors;
+}
+
+function newRandomGrid(size) {
+    var grid = [], i, j;
+
+    // Generate a random grid.
+    for (i = 0; i < size; ++i) {
+        grid.push([]);
+        for (j = 0; j < size; ++j) {
+            grid[i].push((Math.random() < 0.6) ? 0 : 1);
+        }
+    }
+    return grid;
+}
+
+function newSolvableGrid(size, allNeighbors, operator, invertSelf) {
+    var grid = [], moves = [], moveCount = 0, i, j, k, pos, valid, copy;
+
+    // Generate a solved grid and a list of unique moves.
+    for (i = 0; i < size; ++i) {
+        grid.push([]);
+        for (j = 0; j < size; ++j) {
+            grid[i].push(1);
+            moves.push(i*size + j);
+        }
+    }
+
+    // From the solved grid, move some steps back.
+    // This guarantees a solvable configuration.
+    function undoMove(pos, index) {
+        /*jshint bitwise: false */
+        var oldVal = grid[pos.i][pos.j],
+            newVal = operator(grid[i][j], oldVal);
+
+        grid[pos.i][pos.j] = newVal;
+        valid |= (newVal !== oldVal);
+    }
+
+    shuffle(moves);
+    // Number of moves to roll back.
+    k = 10 + 5*(size - 4);
+    moves.length = k;
+    for (k = k - 1; k >= 0; --k) {
+        pos = moves[k];
+        i = Math.floor(pos / size);
+        j = pos % size;
+
+        valid = false;
+        allNeighbors[i][j].forEach(undoMove);
+        if (invertSelf) {
+            grid[i][j] = Number(!grid[i][j]);
+            valid = true;
+        }
+
+        if (valid) {
+            ++moveCount;
+        }
+    }
+
+
+    if (DEBUG) {
+        log(moves.length + ' moves');
+        log(moves);
+        log(moveCount);
+
+        // Replay the moves to make sure the puzzle is sound.
+        // NOTE: This only works for xor and not.
+        copy = copy2d(grid);
+        moves.forEach(function(move, index) {
+            var i = Math.floor(move / size),
+                j = move % size;
+
+            allNeighbors[i][j].forEach(function move(pos, index) {
+                copy[pos.i][pos.j] = operator(copy[i][j], copy[pos.i][pos.j]);
+            });
+            if (invertSelf) {
+                copy[i][j] = Number(!copy[i][j]);
+            }
+        });
+        for (i = 0; i < size; ++i)
+            for (j = 0; j < size; ++j)
+                if (copy[i][j] !== 1)
+                    log('Invalid puzzle construction!');
+    }
+
+    return grid;
+}
+
+/****** jQuery ******/
+
+function shake($element, settings) {
+    var times = settings.times,
+        offset = settings.offset,
+        duration = (settings.duration / times) / 3,
+        animation0 = { left: '-=' + offset },
+        animation1 = { left: '+=' + (offset * 2) },
+        animation2 = { left: '-=' + (offset * 2) },
+        easing = 'swing', i;
+
+    // Take one step left <('-'<)
+    // (and one step right (>'-')>, one to the front and one to the side)
+    $element.animate(animation0, duration, easing);
+    // Shake, shake, shake!
+    for (i = 1; i < times; ++i) {
+        $element
+            // two to the right
+            .animate(animation1, duration, easing)
+            // two to the left
+            .animate(animation2, duration, easing);
+    }
+    $element
+        // two more to the right
+        .animate(animation1, duration, easing)
+        // and one to the left, to return to where we started.
+        .animate(animation0, duration, easing);
+}
+
+
+function newScoreModifierPool() {
+    var pool = [], pos = -1, len = 10, i;
+
+    for (i = 1; i <= len; ++i) {
+        pool.push($('<div class="score-modifier"></div>'));
+    }
+
+    return {
+        get: function() {
+            pos = (pos + 1) % len;
+            return pool[pos];
+        }
+    };
+}
+
+var scoreModifierPool = newScoreModifierPool();
+
+function complete() {
+    /*jshint validthis: true */
+    $(this).remove();
+}
+
+function scoreEffect(modifier) {
+    var $scoreModifier = scoreModifierPool.get(),
+        $scoreDiv = $('#score'),
+        $scoreSpan = $scoreDiv.children(),
+        scoreOffset = $scoreSpan.offset();
+
+    $scoreModifier
+        .text(modifier)
+        .appendTo($scoreDiv.parent())
+        .offset({
+            top: scoreOffset.top +
+                // Randomize it a bit.
+                (0 + Math.floor(Math.random() * 9)),
+            left: scoreOffset.left + ($scoreSpan.width() - $scoreModifier.width())/2 +
+                // Randomize it a bit.
+                (-5 + Math.floor(Math.random() * 11))
+        })
+        .animate({ top: '+=10'}, 500, complete);
+}
+
 /************************************* op *************************************/
 
 /*
  * The following rely on the HTML markup in order to work.
  */
 
-function fillHtmlGrid(grid) {
-    $('.cell').filter(':visible').text(function(i, oldText) {
-        var val = grid[Math.floor(i / grid.length)][i % grid.length];
+function getNumber($cell) {
+    return parseInt($cell.children('div').text(), 10);
+}
 
-        markCell($(this), val);
-        return val;
+function setNumber($cell, number) {
+    $cell.children('div').text(number);
+}
+
+/**
+ * Marks the specified cell, according to the value provided.
+ */
+function markCell($cell, val) {
+    $cell.toggleClass('one', (val === 1));
+}
+
+/**
+ * @return {boolean} - true, if the cell changed
+ */
+function updateCell($cell, val, operator) {
+    var otherVal = getNumber($cell),
+        res = operator(val, otherVal);
+
+    setNumber($cell, res);
+    markCell($cell, res);
+
+    return (res !== otherVal);
+}
+
+function invertCell($cell) {
+    var val = getNumber($cell),
+        res = Number(!val);
+
+    setNumber($cell, res);
+    markCell($cell, res);
+}
+
+
+function fillHtmlGrid(grid) {
+    $('.cell').filter(':visible').each(function(i) {
+        var val = grid[Math.floor(i / grid.length)][i % grid.length],
+            $this = $(this);
+
+        markCell($this, val);
+        $this.children('div').text(val);
     });
 }
 
@@ -897,9 +899,6 @@ op.start = function(options) {
         }
 
         op._start(newGame, options);
-
-        // Make the cells square.
-        square();
     }
 
     // Let the game begin (old or new).
@@ -908,15 +907,6 @@ op.start = function(options) {
     $('#options input').change(startGame);
     $('.start-button').click(startGame);
 };
-
-
-function square() {
-    var $cells = $('.cell');
-    $cells.height($cells.width());
-}
-
-// Keep the cells square.
-$(window).resize(square);
 
 
 // Expose;
