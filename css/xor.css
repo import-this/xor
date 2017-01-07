@@ -3,7 +3,7 @@
     padding: 0;
 }
 body {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 18px;
     color: #505050;
     background-color: #f2f0f5;
@@ -32,6 +32,7 @@ input[type='checkbox'] + label {
 }
 input[type='checkbox'] + label > span {
     display: inline-block;
+    /* The text is not aligned exactly with the checkbox. */
     vertical-align: -1px;
     width: 17px;
     height: 17px;
@@ -47,8 +48,11 @@ input[type='checkbox'] + label > span {
             border-radius: 3px;
 }
 input[type='checkbox'] + label > span::before {
-    content: '\2714';
+    content: '\2714';       /* Tick sign. */
     opacity: 0;
+    /* The tick sign is not placed exactly in the center. */
+    position: relative;
+    top: -2px;
 }
 input[type='checkbox'] + label:hover > span::before {
     opacity: 0.55;
@@ -67,6 +71,7 @@ input[type='radio'] + label {
 }
 input[type='radio'] + label > span {
     display: inline-block;
+    /* The text is not aligned exactly with the radio button. */
     vertical-align: -5px;
     width: 17px;
     height: 17px;
@@ -150,7 +155,8 @@ input[type='radio']:checked + label > span{
 }
 #grid {
     position: relative;         /* For shaking. */
-    width: 100%;
+    table-layout: fixed;        /* For fast comp of the correct column width. */
+    width: 100%;                /* Tables fit their content by default. */
     border-spacing: 15px;
 }
 #win-screen {
@@ -391,7 +397,7 @@ input[type='radio']:checked + label > span{
     color: #3a3a3a;
     background-color: rgba(255, 226, 36, 0.9);
 }
-.five, .six {
+.hidden {
     display: none;
 }
 
@@ -412,6 +418,6 @@ input[type='radio']:checked + label > span{
         font-size: 0.88em;
     }
     .cell {
-        font-size: 45px;
+        font-size: 38px;
     }
 }

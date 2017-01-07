@@ -109,39 +109,6 @@
                 </div>
             </header>
             <div id="game-container">
-                <div id="win-screen">
-                    <div class="center">
-                        <div id="win">You win!</div>
-                        <div id="win-msg-container">
-                            <div class="high-score-msg">Awesome! You have a new high score!<br/>Share it with your friends! #xnor</div>
-                            <div class="high-score-msg">Excellent! You have a new high score!<br/>Share it with your friends! #xnor</div>
-                            <div class="high-score-msg">Brilliant! You have a new high score!<br/>Share it with your friends! #xnor</div>
-                            <div class="share-msg">Do you like XNOR?<br/>Tell your friends! #xnor</div>
-                            <div class="share-msg">Do you think XNOR is cool?<br/>Tell your friends! #xnor</div>
-                            <div class="share-msg">Tell your friends! #xnor</div>
-                            <div class="share-msg">Thank you for playing!</div>
-                            <div class="share-msg">Want to support XNOR?<br/>Sharing is appreciated! #xnor</div>
-                            <div class="share-msg">Wanna support me?<br/>Share the game! #xnor</div>
-                            <div class="share-msg">1. Like 2. Share 3. ??? 4. Profit.</div>
-                            <div class="share-msg">Sharing is caring.</div>
-                            <div class="share-msg">You scored <span id="final-score"></span> points.<br/>Share it with your friends! #xnor</div>
-                        </div>
-                        <div class="start-restart">
-                            <button class="start-button" name="start" type="button">New Game</button>
-                            <button class="restart-button" name="restart" type="button">Restart</button>
-                        </div>
-                        <div class="social">
-                            <!-- Facebook Like and Share Buttons -->
-                            <div class="fb-like" data-href="https://www.facebook.com/xorpuzzle/" data-layout="button" data-action="like" data-size="small" data-show-faces="false" data-share="false"></div>
-                            <div class="fb-share-button" data-href="https://import-this.github.io/xor/xnor.html" data-layout="button" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fimport-this.github.io%2Fxor%2Fxnor.html&amp;src=sdkpreparse">Share</a></div>
-                            <!-- Twitter Buttons -->
-                            <a href="https://twitter.com/share" class="twitter-share-button" data-text="Play XNOR and convert all 0&#39;s to 1&#39;s!" data-url="https://git.io/xnorpuzzle" data-via="importthat" data-hashtags="xnor,xor" data-show-count="false">Tweet</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
-                        </div>
-                    </div>
-                </div>
-                <div id="note">
-                    Null move
-                </div>
                 <div id="grid-container">
                     <table id="grid">
                         <tr class="row">
@@ -177,22 +144,55 @@
                             <td id="p-3-5" class="cell six"><div></div></td>
                         </tr>
                         <tr class="row five">
-                            <td id="p-4-0" class="cell"><div></div></td>
-                            <td id="p-4-1" class="cell"><div></div></td>
-                            <td id="p-4-2" class="cell"><div></div></td>
-                            <td id="p-4-3" class="cell"><div></div></td>
+                            <td id="p-4-0" class="cell five"><div></div></td>
+                            <td id="p-4-1" class="cell five"><div></div></td>
+                            <td id="p-4-2" class="cell five"><div></div></td>
+                            <td id="p-4-3" class="cell five"><div></div></td>
                             <td id="p-4-4" class="cell five"><div></div></td>
                             <td id="p-4-5" class="cell six"><div></div></td>
                         </tr>
                         <tr class="row six">
-                            <td id="p-5-0" class="cell"><div></div></td>
-                            <td id="p-5-1" class="cell"><div></div></td>
-                            <td id="p-5-2" class="cell"><div></div></td>
-                            <td id="p-5-3" class="cell"><div></div></td>
-                            <td id="p-5-4" class="cell five"><div></div></td>
+                            <td id="p-5-0" class="cell six"><div></div></td>
+                            <td id="p-5-1" class="cell six"><div></div></td>
+                            <td id="p-5-2" class="cell six"><div></div></td>
+                            <td id="p-5-3" class="cell six"><div></div></td>
+                            <td id="p-5-4" class="cell six"><div></div></td>
                             <td id="p-5-5" class="cell six"><div></div></td>
                         </tr>
                     </table>
+                </div>
+                <div id="note">
+                    Null move
+                </div>
+                <div id="win-screen">
+                    <div class="center">
+                        <div id="win">You win!</div>
+                        <div id="win-msg-container">
+                            <div class="high-score-msg">Awesome! You have a new high score!<br/>Share it with your friends! #xnor</div>
+                            <div class="high-score-msg">Excellent! You have a new high score!<br/>Share it with your friends! #xnor</div>
+                            <div class="high-score-msg">Brilliant! You have a new high score!<br/>Share it with your friends! #xnor</div>
+                            <div class="share-msg">Do you like XNOR?<br/>Tell your friends! #xnor</div>
+                            <div class="share-msg">Do you think XNOR is cool?<br/>Tell your friends! #xnor</div>
+                            <div class="share-msg">Tell your friends! #xnor</div>
+                            <div class="share-msg">Thank you for playing!</div>
+                            <div class="share-msg">Want to support XNOR?<br/>Sharing is appreciated! #xnor</div>
+                            <div class="share-msg">Wanna support me?<br/>Share the game! #xnor</div>
+                            <div class="share-msg">1. Like 2. Share 3. ??? 4. Profit.</div>
+                            <div class="share-msg">Sharing is caring.</div>
+                            <div class="share-msg">You scored <span id="final-score"></span> points.<br/>Share it with your friends! #xnor</div>
+                        </div>
+                        <div class="start-restart">
+                            <button class="start-button" name="start" type="button">New Game</button>
+                            <button class="restart-button" name="restart" type="button">Restart</button>
+                        </div>
+                        <div class="social">
+                            <!-- Facebook Like and Share Buttons -->
+                            <div class="fb-like" data-href="https://www.facebook.com/xorpuzzle/" data-layout="button" data-action="like" data-size="small" data-show-faces="false" data-share="false"></div>
+                            <div class="fb-share-button" data-href="https://import-this.github.io/xor/xnor.html" data-layout="button" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fimport-this.github.io%2Fxor%2Fxnor.html&amp;src=sdkpreparse">Share</a></div>
+                            <!-- Twitter Buttons -->
+                            <a href="https://twitter.com/share" class="twitter-share-button" data-text="Play XNOR and convert all 0&#39;s to 1&#39;s!" data-url="https://git.io/xnorpuzzle" data-via="importthat" data-hashtags="xnor,xor" data-show-count="false">Tweet</a><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div id="info">
@@ -236,7 +236,7 @@
 
         <script type="text/javascript">
             (function() {
-                op.start({
+                op.setup({
                     operator: function xnor(val, otherVal) {
                         return Number(!(val ^ otherVal));
                     },

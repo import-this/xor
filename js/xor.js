@@ -453,53 +453,52 @@ function shake($element, settings) {
         .animate(animation0, duration, easing);
 }
 
+var showScoreChange = (function() {
+    var scoreModifierPool = (function newScoreModifierPool() {
+        var pool = [], pos = -1, len = 10, i;
 
-function newScoreModifierPool() {
-    var pool = [], pos = -1, len = 10, i;
+        for (i = 1; i <= len; ++i) {
+            pool.push($('<div class="score-modifier"></div>'));
+        }
 
-    for (i = 1; i <= len; ++i) {
-        pool.push($('<div class="score-modifier"></div>'));
+        return {
+            get: function() {
+                pos = (pos + 1) % len;
+                return pool[pos];
+            }
+        };
+    }());
+
+    function complete() {
+        /*jshint validthis: true */
+        $(this).remove();
     }
 
-    return {
-        get: function() {
-            pos = (pos + 1) % len;
-            return pool[pos];
-        }
+    return function showScoreChange(modifier) {
+        var $scoreModifier = scoreModifierPool.get(),
+            $scoreDiv = $('#score'),
+            $scoreSpan = $scoreDiv.children(),
+            scoreOffset = $scoreSpan.offset();
+
+        $scoreModifier
+            .text(modifier)
+            .appendTo($scoreDiv.parent())
+            .offset({
+                top: scoreOffset.top +
+                    // Randomize it a bit.
+                    (0 + Math.floor(Math.random() * 9)),
+                left: scoreOffset.left + ($scoreSpan.width() - $scoreModifier.width())/2 +
+                    // Randomize it a bit.
+                    (-5 + Math.floor(Math.random() * 11))
+            })
+            .animate({ top: '+=10'}, 500, complete);
     };
-}
-
-var scoreModifierPool = newScoreModifierPool();
-
-function complete() {
-    /*jshint validthis: true */
-    $(this).remove();
-}
-
-function scoreEffect(modifier) {
-    var $scoreModifier = scoreModifierPool.get(),
-        $scoreDiv = $('#score'),
-        $scoreSpan = $scoreDiv.children(),
-        scoreOffset = $scoreSpan.offset();
-
-    $scoreModifier
-        .text(modifier)
-        .appendTo($scoreDiv.parent())
-        .offset({
-            top: scoreOffset.top +
-                // Randomize it a bit.
-                (0 + Math.floor(Math.random() * 9)),
-            left: scoreOffset.left + ($scoreSpan.width() - $scoreModifier.width())/2 +
-                // Randomize it a bit.
-                (-5 + Math.floor(Math.random() * 11))
-        })
-        .animate({ top: '+=10'}, 500, complete);
-}
+}());
 
 /************************************* op *************************************/
 
 /*
- * The following rely on the HTML markup in order to work.
+ * The following rely heavily on the HTML markup in order to work.
  */
 
 function getNumber($cell) {
@@ -539,15 +538,23 @@ function invertCell($cell) {
 }
 
 
-function fillHtmlGrid(grid) {
-    $('.cell').filter(':visible').each(function(i) {
-        var val = grid[Math.floor(i / grid.length)][i % grid.length],
-            $this = $(this);
+function fillCell($cell, val) {
+    markCell($cell, val);
+    $cell.children('div').text(val);
+}
 
-        markCell($this, val);
-        $this.children('div').text(val);
+function fillHtmlGridFromArr(grid) {
+    $('.cell:not(.hidden)').each(function(i) {
+        fillCell($(this), grid[Math.floor(i / grid.length)][i % grid.length]);
     });
 }
+
+function fillHtmlGridFromStr(str) {
+    $('.cell:not(.hidden)').each(function(index) {
+        fillCell($(this), +str[index]);
+    });
+}
+
 
 function makeCellSelector(i, j) {
     return '#p-' + i + '-' + j;
@@ -567,16 +574,60 @@ function getPos($cell) {
 function updateTime(elapsedTime) {
     $('#time span').text(formatTime(elapsedTime));
 }
+
 function updateCount(moveCount) {
     $('#move-count span').text(moveCount);
 }
+
 function updateScore(score) {
     $('#score span').text(score);
 }
+
 function updateStats(elapsedTime, moveCount, score) {
     updateTime(elapsedTime);
     updateCount(moveCount);
     updateScore(score);
+}
+
+function loadStats(storage) {
+    var best;
+
+    best = storage.loadBestTime();
+    $('#best-time span').text((best !== null) ? formatTime(best) : 'N/A');
+    best = storage.loadBestMoveCount();
+    $('#best-move-count span').text((best !== null) ? best : 'N/A');
+    best = storage.loadHighScore();
+    $('#high-score span').text((best !== null) ? best : 'N/A');
+}
+
+
+function showAnnotation() {
+    $('#annotation')
+        .delay(1500)
+        .slideDown('slow')
+        .find('.close-button')
+            .click(function() {
+                $(this).parent().slideUp('slow');
+            });
+}
+
+function setHiddenCells() {
+    // Initially hide the fifth and sixth row/column
+    // Use a class for quick visibility detection later on.
+    $('.five, .six').addClass('hidden');
+    // and then show as many as the user selected.
+    switch ($('#options input[name="grid-size"]:checked').val()) {
+        case '6':
+            $('.six').removeClass('hidden');
+            /* falls through */
+        case '5':
+            $('.five').removeClass('hidden');
+            /* falls through */
+        case '4':
+            break;
+        default:
+            throw new Error('Invalid bot count!');
+    }
 }
 
 
@@ -585,16 +636,17 @@ function updateStats(elapsedTime, moveCount, score) {
  */
 var op = {};
 
-/**
- * The timer ID.
- */
-var intervalId;
-
-op._start = function(newGame, opts) {
-    var storage, grid, size, diagonal, circular, invertSelf, allNeighbors,
+op.setup = function(options) {
+    var opts = $.extend({}, {
+            prefix: 'xor',
+            operator: null,
+            invertSelf: false,
+            random: false
+        }, options),
+        storage = new StorageManager(opts.prefix),
+        intervalId, grid, allNeighbors,
+        size, diagonal, circular, invertSelf,
         elapsedTime, moveCount, score;
-
-    if (newGame === undefined) newGame = true;
 
     function clearStats() {
         elapsedTime = 0;
@@ -604,12 +656,8 @@ op._start = function(newGame, opts) {
         updateStats(elapsedTime, moveCount, score);
     }
 
-    function resetTimer(storage) {
-        // Reset timer and move count.
-        if (intervalId) {
-            clearInterval(intervalId);
-        }
-        // Start timer.
+
+    function startTimer() {
         intervalId = setInterval(function updateTimer() {
             var scoreModifier = -1;
 
@@ -618,96 +666,24 @@ op._start = function(newGame, opts) {
             // Score decreases with each second passing by.
             updateScore(score += scoreModifier);
             storage.saveScore(score);
-            scoreEffect(scoreModifier);
+            showScoreChange(scoreModifier);
         }, 1000);
     }
 
-    function save() {
-        storage.saveMoveCount(moveCount);
-        storage.saveScore(score);
-        storage.saveGame($('#grid').html());
+    function stopTimer() {
+        clearInterval(intervalId);
     }
 
-    storage = new StorageManager(opts.prefix);
-
-    if (!newGame && storage.hasSavedGame()) {
-        elapsedTime = storage.loadTime();
-        moveCount = storage.loadMoveCount();
-        score = storage.loadScore();
-
-        updateStats(elapsedTime, moveCount, score);
-
-        size = storage.loadGridSize();
-        diagonal = storage.loadDiagonal();
-        circular = storage.loadCircular();
-        invertSelf = storage.loadInvertSelf();
-
-        $('#options input[name="grid-size"][value="' + size + '"]').prop('checked', true);
-        $('#diagonal').prop('checked', diagonal);
-        $('#circular').prop('checked', circular);
-        $('#invert-self').prop('checked', invertSelf);
-
-        $('#grid').html(storage.loadGame());
-        // Remove possible class remnants.
-        $('.cell').removeClass('neighbor');
-
-        allNeighbors = getAllNeighbors(size, diagonal, circular);
-
-        grid = storage.loadGrid();
-    } else {
-        clearStats();
-
-        size = parseInt($('#options input[name="grid-size"]:checked').val(), 10);
-        diagonal = $('#diagonal').is(':checked');
-        circular = $('#circular').is(':checked');
-        invertSelf = opts.invertSelf || $('#invert-self').is(':checked');
-
-        storage.saveGridSize(size);
-        storage.saveDiagonal(diagonal);
-        storage.saveCircular(circular);
-        storage.saveInvertSelf(invertSelf);
-
-        allNeighbors = getAllNeighbors(size, diagonal, circular);
-
-        if (opts.random) {
-            grid = newRandomGrid(size);
-        } else {
-            grid = newSolvableGrid(size, allNeighbors, opts.operator, invertSelf);
-        }
-        fillHtmlGrid(grid);
-        storage.saveGrid(grid);
-        // Save now, in case the player does not do anything else.
-        save();
+    function restartTimer() {
+        stopTimer();
+        startTimer();
     }
 
-    $('.restart-button').off().click(function() {
-        clearStats();
-        resetTimer(storage);
 
-        $('#win-screen').hide();
+    function registerHandlers() {
+        var $cells = $('.cell:not(.hidden)'),
+            element = null;
 
-        fillHtmlGrid(grid);
-        // Save now, in case the player does not do anything else.
-        save();
-    });
-
-    (function loadStats(storage) {
-        var best;
-
-        best = storage.loadBestTime();
-        $('#best-time span').text((best !== null) ? formatTime(best) : 'N/A');
-        best = storage.loadBestMoveCount();
-        $('#best-move-count span').text((best !== null) ? best : 'N/A');
-        best = storage.loadHighScore();
-        $('#high-score span').text((best !== null) ? best : 'N/A');
-    }(storage));
-
-    resetTimer(storage);
-
-    // The winning screen may have been left showing.
-    $('#win-screen').hide();
-
-    (function registerHandlers(storage, size, diagonal, circular, invertSelf, allNeighbors) {
         function markNeighbor(pos, index) {
             $(makeCellSelector(pos.i, pos.j)).addClass('neighbor');
         }
@@ -715,11 +691,8 @@ op._start = function(newGame, opts) {
             $(makeCellSelector(pos.i, pos.j)).removeClass('neighbor');
         }
 
-        // Cache the cells.
-        var $cells = $('.cell').filter(':visible'),
-            element = null;
-
         function onMouseEnter() {
+            /*jshint validthis: true */
             var thisPos = getPos($(this));
 
             allNeighbors[thisPos.i][thisPos.j].forEach(markNeighbor);
@@ -727,6 +700,7 @@ op._start = function(newGame, opts) {
         }
 
         function onMouseLeave() {
+            /*jshint validthis: true */
             var thisPos = getPos($(this));
 
             allNeighbors[thisPos.i][thisPos.j].forEach(unmarkNeighbor);
@@ -734,7 +708,7 @@ op._start = function(newGame, opts) {
         }
 
         function onClick(event) {
-            /*jshint bitwise: false */
+            /*jshint validthis: true, bitwise: false */
             var $cell = $(this), val = getNumber($cell), pos = getPos($cell),
                 neighbors = allNeighbors[pos.i][pos.j], valid = false,
                 i, scoreModifier, $msgs;
@@ -753,10 +727,10 @@ op._start = function(newGame, opts) {
             if (valid) {
                 updateCount(++moveCount);
                 // Score decreases with each move.
-                scoreModifier = -100;
+                scoreModifier = -50;
                 updateScore(score += scoreModifier);
-                scoreEffect(scoreModifier);
-                save();
+                showScoreChange(scoreModifier);
+                saveGame();
             } else {
                 $('#note')
                     // Take care of clicks in quick succesion.
@@ -772,8 +746,7 @@ op._start = function(newGame, opts) {
 
             // If all (visible) cells contain '1'
             if ($cells.filter('.one').length === size * size) {
-                // Stop the timer.
-                clearInterval(intervalId);
+                stopTimer();
                 $('#final-score').text(score);
                 // Choose a random message to show.
                 $('#win-msg-container > div').hide();
@@ -866,46 +839,110 @@ op._start = function(newGame, opts) {
                 return true;
             }
         }, '.cell');
-    }(storage, size, diagonal, circular, invertSelf, allNeighbors));
-};
+    }
 
-op.start = function(options) {
+
+    function saveGame() {
+        storage.saveMoveCount(moveCount);
+        storage.saveScore(score);
+        storage.saveGame($('.cell:not(.hidden)').children('div').text());
+    }
+
+    function loadGame() {
+        elapsedTime = storage.loadTime();
+        moveCount = storage.loadMoveCount();
+        score = storage.loadScore();
+
+        updateStats(elapsedTime, moveCount, score);
+
+        size = storage.loadGridSize();
+        diagonal = storage.loadDiagonal();
+        circular = storage.loadCircular();
+        invertSelf = storage.loadInvertSelf();
+
+        $('#options input[name="grid-size"][value="' + size + '"]').prop('checked', true);
+        $('#diagonal').prop('checked', diagonal);
+        $('#circular').prop('checked', circular);
+        $('#invert-self').prop('checked', invertSelf);
+
+        //
+        setHiddenCells();
+        registerHandlers();
+        fillHtmlGridFromStr(storage.loadGame());
+
+        allNeighbors = getAllNeighbors(size, diagonal, circular);
+        grid = storage.loadGrid();
+    }
+
+    function startGame() {
+        // The winning screen may have been left showing.
+        $('#win-screen').hide();
+        clearStats();
+
+        size = parseInt($('#options input[name="grid-size"]:checked').val(), 10);
+        diagonal = $('#diagonal').is(':checked');
+        circular = $('#circular').is(':checked');
+        invertSelf = opts.invertSelf || $('#invert-self').is(':checked');
+
+        storage.saveGridSize(size);
+        storage.saveDiagonal(diagonal);
+        storage.saveCircular(circular);
+        storage.saveInvertSelf(invertSelf);
+
+        allNeighbors = getAllNeighbors(size, diagonal, circular);
+        if (opts.random) {
+            grid = newRandomGrid(size);
+        } else {
+            grid = newSolvableGrid(size, allNeighbors, opts.operator, invertSelf);
+        }
+        //
+        setHiddenCells();
+        fillHtmlGridFromArr(grid);
+        registerHandlers();
+
+        storage.saveGrid(grid);
+        // Save now, in case the player does not do anything else.
+        saveGame();
+    }
+
+    function restartGame() {
+        // The winning screen may have been left showing.
+        $('#win-screen').hide();
+        clearStats();
+
+        fillHtmlGridFromArr(grid);
+        // Save now, in case the player does not do anything else.
+        saveGame();
+        restartTimer();
+    }
+
+    function newGame() {
+        startGame();
+        restartTimer();
+    }
+
+
     // Show the annotation sometimes.
     if (Math.random() < 0.75) {
-        $('#annotation')
-            .delay(1500)
-            .slideDown('slow')
-            .find('.close-button')
-                .click(function() {
-                    $(this).parent().slideUp('slow');
-                });
+        showAnnotation();
     }
 
-    function startGame(newGame) {
-        // Initially hide the fifth and sixth row/column
-        $('.five, .six').hide();
-        // and then show as many as the user selected.
-        switch ($('#options input[name="grid-size"]:checked').val()) {
-            case '6':
-                $('.six').show();
-                /* falls through */
-            case '5':
-                $('.five').show();
-                /* falls through */
-            case '4':
-                break;
-            default:
-                throw new Error('Invalid bot count!');
-        }
+    // Prevent text selection on successive clicks.
+    $('.cell').on('mousedown', function onMousedown(event) {
+        event.preventDefault();     // but let the event propagate!
+    });
 
-        op._start(newGame, options);
+    loadStats(storage);
+    if (storage.hasSavedGame()) {
+        loadGame();
+    } else {
+        startGame();
     }
+    startTimer();
 
-    // Let the game begin (old or new).
-    startGame(false);
-
-    $('#options input').change(startGame);
-    $('.start-button').click(startGame);
+    $('#options input').change(newGame);
+    $('.start-button').click(newGame);
+    $('.restart-button').click(restartGame);
 };
 
 
