@@ -286,6 +286,9 @@ input[type='radio']:checked + label > span{
          -o-transition-duration: 0.2s;
             transition-duration: 0.2s;
 }
+#ad {
+    margin-bottom: 10px;
+}
 #options {
     margin-bottom: 10px;
 }
