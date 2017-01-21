@@ -802,8 +802,7 @@ op.setup = function(options) {
                     return;
                 }
 
-                // Use jQuery's originalEvent property to get the touch event!
-                touch = event.originalEvent.changedTouches[0];
+                touch = event.changedTouches[0];
                 newElement = document.elementFromPoint(touch.clientX, touch.clientY);
                 // The player moved to a different cell.
                 if (newElement !== element) {
