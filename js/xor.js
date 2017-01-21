@@ -46,6 +46,17 @@ var log = (function() {
     return function noop() {};
 }());
 
+/********************************* Polyfills **********************************/
+
+if (String.prototype.startsWith === undefined) {
+    log('Undefined "String.prototype.startsWith". Using really bad polyfill...');
+
+    // http://stackoverflow.com/a/4579228/1751037
+    String.prototype.startsWith = function startsWith(prefix) {
+        return this.lastIndexOf(prefix, 0) === 0;
+    };
+}
+
 /******************************* Local Storage ********************************/
 
 // https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Storage
