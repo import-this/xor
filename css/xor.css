@@ -133,7 +133,7 @@ input[type='radio']:checked + label > span{
 #container {
     min-width: 488px;
     max-width: 550px;
-    margin: 0px auto;
+    margin: 0 auto;
     text-align: center;
 }
 #game-container {
@@ -172,9 +172,9 @@ input[type='radio']:checked + label > span{
 
     /* background-color: #edc22e */
     background-color: rgba(255, 226, 36, 0.8375);
-    -webkit-box-shadow: 0px 0px 25px 8px rgba(255, 226, 36, 0.75);
-       -moz-box-shadow: 0px 0px 25px 8px rgba(255, 226, 36, 0.75);
-            box-shadow: 0px 0px 25px 8px rgba(255, 226, 36, 0.75);
+    -webkit-box-shadow: 0 0 25px 8px rgba(255, 226, 36, 0.75);
+       -moz-box-shadow: 0 0 25px 8px rgba(255, 226, 36, 0.75);
+            box-shadow: 0 0 25px 8px rgba(255, 226, 36, 0.75);
 }
 #win-screen > .center {
     /* Center it. */
@@ -188,7 +188,7 @@ input[type='radio']:checked + label > span{
             transform: translate(-50%, -50%);
 }
 #win-screen .start-restart button {
-    margin: 15px 0px 20px;
+    margin: 15px 0 20px;
 }
 #win-screen .social > iframe {
     /* Fix Twitter button. */
@@ -211,16 +211,16 @@ input[type='radio']:checked + label > span{
 
     position: absolute;
     top: -35px;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
 
     padding: 6px 14px;
     font-weight: bold;
     /* background-color: #edc22e */
     background-color: rgba(255, 226, 36, 0.95);
-    -webkit-box-shadow: 0px 0px 1px 0px rgba(255, 226, 36, 0.75);
-       -moz-box-shadow: 0px 0px 1px 0px rgba(255, 226, 36, 0.75);
-            box-shadow: 0px 0px 1px 0px rgba(255, 226, 36, 0.75);
+    -webkit-box-shadow: 0 0 1px 0 rgba(255, 226, 36, 0.75);
+       -moz-box-shadow: 0 0 1px 0 rgba(255, 226, 36, 0.75);
+            box-shadow: 0 0 1px 0 rgba(255, 226, 36, 0.75);
     -webkit-border-radius: 6px;
        -moz-border-radius: 6px;
             border-radius: 6px;
@@ -230,18 +230,18 @@ input[type='radio']:checked + label > span{
     font-size: 85px;
     font-weight: bold;
 }
-#description, #radios {
+#description, .radios {
     margin-bottom: 5px;
 }
 .first, .second, .third {
-    padding: 0px 5px;
+    padding: 0 5px;
     border: 1px solid rgba(40, 40, 40, 0.25);
     -webkit-border-radius: 3px;
        -moz-border-radius: 3px;
             border-radius: 3px;
-    -webkit-box-shadow: 0px 0px 1px 0px rgba(40, 40, 40, 0.25);
-       -moz-box-shadow: 0px 0px 1px 0px rgba(40, 40, 40, 0.25);
-            box-shadow: 0px 0px 1px 0px rgba(40, 40, 40, 0.25);
+    -webkit-box-shadow: 0 0 1px 0 rgba(40, 40, 40, 0.25);
+       -moz-box-shadow: 0 0 1px 0 rgba(40, 40, 40, 0.25);
+            box-shadow: 0 0 1px 0 rgba(40, 40, 40, 0.25);
 }
 .first {
     color: #3998d6;
@@ -286,14 +286,14 @@ input[type='radio']:checked + label > span{
          -o-transition-duration: 0.2s;
             transition-duration: 0.2s;
 }
-#ad {
+.ad {
     margin-bottom: 10px;
 }
-#options {
+.options {
     margin-bottom: 10px;
 }
-#options label {
-    margin: 0px 10px 0px 4px;
+.options label {
+    margin: 0 10px 0 4px;
 }
 #start-restart {
     float: left;
@@ -328,7 +328,7 @@ input[type='radio']:checked + label > span{
     margin-top: 20px;
 }
 #social {
-    margin: 3px 0px 20px;
+    margin: 3px 0 20px;
 }
 #social a {
     /* Hide text of FB share and Twitter buttons until the plugins have loaded. */
@@ -345,7 +345,7 @@ input[type='radio']:checked + label > span{
     margin-top: 2px;
 }
 #about {
-    margin: 20px 0px 20px;
+    margin: 20px 0 20px;
 }
 
 .cell {

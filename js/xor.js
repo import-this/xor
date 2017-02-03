@@ -8,7 +8,7 @@
  * Released under the BSD 3-Clause License
  * https://github.com/import-this/xor/blob/master/LICENSE
  *
- * Supported browsers (as suggested by online references):
+ * Supported browsers (as stated in online references):
  *     IE 9+, FF 3.5+, Chrome 4+, Opera 10.60+, SF 4+
  *
  * The code follows the conventions of Google JavaScript Style Guide,
@@ -66,7 +66,7 @@ if (String.prototype.startsWith === undefined) {
  * The version number. Useful for marking changes in the storage format.
  * @const {string}
  */
-var VERSION = '1.1.1';
+var VERSION = '1.2.0';
 
 /**
  * Storage keys.
@@ -106,13 +106,16 @@ function StorageManager(prefix) {
 }
 
 /**
- *
+ * Returns a string that identifies which mutators are on and which are off.
  */
 StorageManager.prototype._getMode = function getMode() {
-    return '' + this.loadGridSize() +
-        ((this.loadDiagonal()) ? 'd' : '') +
-        ((this.loadCircular()) ? 'c' : '') +
-        ((this.loadInvertSelf()) ? 'i' : '') + '_';
+    var m = this.loadMutators();
+
+    if (m === null) return null;
+    return '' + m.size + m.difficulty +
+        ((m.diagonal) ? 'd' : '') +
+        ((m.circular) ? 'c' : '') +
+        ((m.invertSelf) ? 'i' : '') + '_';
 };
 
 StorageManager.prototype.clear = function clear() {
@@ -164,29 +167,11 @@ StorageManager.prototype.saveBest = function saveBest(key, value) {
     }
 };
 
-StorageManager.prototype.saveGridSize = function saveGridSize(size) {
-    this.save(keys.GRID_SIZE, size);
+StorageManager.prototype.saveMutators = function saveMutators(mutators) {
+    this.save(keys.MUTATORS, JSON.stringify(mutators));
 };
-StorageManager.prototype.loadGridSize = function loadGridSize() {
-    return Number(this.load(keys.GRID_SIZE));
-};
-StorageManager.prototype.saveDiagonal = function saveDiagonal(enabled) {
-    this.save(keys.DIAGONAL, enabled);
-};
-StorageManager.prototype.loadDiagonal = function loadDiagonal() {
-    return this.load(keys.DIAGONAL) === 'true';
-};
-StorageManager.prototype.saveCircular = function saveCircular(enabled) {
-    this.save(keys.CIRCULAR, enabled);
-};
-StorageManager.prototype.loadCircular = function loadCircular() {
-    return this.load(keys.CIRCULAR) === 'true';
-};
-StorageManager.prototype.saveInvertSelf = function saveInvertSelf(enabled) {
-    this.save(keys.INVERT_SELF, enabled);
-};
-StorageManager.prototype.loadInvertSelf = function loadInvertSelf() {
-    return this.load(keys.INVERT_SELF) === 'true';
+StorageManager.prototype.loadMutators = function loadMutators() {
+    return JSON.parse(this.load(keys.MUTATORS));
 };
 
 StorageManager.prototype.saveTime = function saveTime(time) {
@@ -300,134 +285,137 @@ function shuffle(array) {
 
 /****** Grid ******/
 
-function getAllNeighbors(size, diagonal, circular) {
-    function addNeighbor(neighbors, size, circular, i, j) {
-        if (circular) {
-            // Wrap the values around. Note the behavior of the % operator.
-            i = (i + size) % size;
-            j = (j + size) % size;
-        } else {
-            if (i < 0 || j < 0 || i >= size || j >= size)
-                return;
-        }
-        neighbors.push({i: i, j: j});
+function addNeighbor(neighbors, size, circular, i, j) {
+    if (circular) {
+        // Wrap the values around. Note the behavior of the % operator.
+        i = (i + size) % size;
+        j = (j + size) % size;
+    } else {
+        if (i < 0 || j < 0 || i >= size || j >= size)
+            return;
     }
+    neighbors.push({i: i, j: j});
+}
 
-    function getNeighbors(i, j, size, diagonal, circular) {
-        var neighbors = [];
+/**
+ * Returns an array of neighbors for the cell located in (i, j).
+ * @return {Array.<object>} - the neighbors of the cell specified.
+ */
+function getCellNeighbors(i, j, size, diagonal, circular) {
+    var neighbors = [];
 
-        // Up
-        addNeighbor(neighbors, size, circular, i - 1, j);
-        // Down
-        addNeighbor(neighbors, size, circular, i + 1, j);
-        // Left
-        addNeighbor(neighbors, size, circular, i, j - 1);
-        // Right
-        addNeighbor(neighbors, size, circular, i, j + 1);
-        if (diagonal) {
-            // Up-left
-            addNeighbor(neighbors, size, circular, i - 1, j - 1);
-            // Up-right
-            addNeighbor(neighbors, size, circular, i - 1, j + 1);
-            // Down-left
-            addNeighbor(neighbors, size, circular, i + 1, j - 1);
-            // Down-right
-            addNeighbor(neighbors, size, circular, i + 1, j + 1);
-        }
-        return neighbors;
+    // Up
+    addNeighbor(neighbors, size, circular, i - 1, j);
+    // Down
+    addNeighbor(neighbors, size, circular, i + 1, j);
+    // Left
+    addNeighbor(neighbors, size, circular, i, j - 1);
+    // Right
+    addNeighbor(neighbors, size, circular, i, j + 1);
+    if (diagonal) {
+        // Up-left
+        addNeighbor(neighbors, size, circular, i - 1, j - 1);
+        // Up-right
+        addNeighbor(neighbors, size, circular, i - 1, j + 1);
+        // Down-left
+        addNeighbor(neighbors, size, circular, i + 1, j - 1);
+        // Down-right
+        addNeighbor(neighbors, size, circular, i + 1, j + 1);
     }
+    return neighbors;
+}
 
+/**
+ * Returns a 2D array of neighbors for all the cells of the grid.
+ * @return {Array.<Array.<object>>} - the neighbors for each cell of the grid.
+ */
+function getNeighbors(size, diagonal, circular) {
     var neighbors = [], i, j;
 
     for (i = 0; i < size; ++i) {
         neighbors.push([]);
         for (j = 0; j < size; ++j) {
-            neighbors[i].push(getNeighbors(i, j, size, diagonal, circular));
+            neighbors[i].push(getCellNeighbors(i, j, size, diagonal, circular));
         }
     }
-
     return neighbors;
 }
 
-function newRandomGrid(size) {
-    var grid = [], i, j;
+/**
+ * Returns a new grid with random 0/1 values.
+ * @param {number} size - the size of the new grid
+ * @param {number} difficulty - an integer in the range {0, 1, 2}
+ * @return {{Array.<Array.<number>>}} - the new grid 
+ */
+function newRandomGrid(size, difficulty) {
+    var grid = [], chance = 0.75 - difficulty*0.25, i, j;
 
     // Generate a random grid.
     for (i = 0; i < size; ++i) {
         grid.push([]);
         for (j = 0; j < size; ++j) {
-            grid[i].push((Math.random() < 0.6) ? 0 : 1);
+            grid[i].push((Math.random() < chance) ? 1 : 0);
         }
     }
     return grid;
 }
 
-function newSolvableGrid(size, allNeighbors, operator, invertSelf) {
-    var grid = [], moves = [], moveCount = 0, i, j, k, pos, valid, copy;
+function newSolvableGrid(mutators, operator) {
+    var grid = [], moves = [], moveCount = 0, neighbors, i, j, valid, copy;
 
     // Generate a solved grid and a list of unique moves.
-    for (i = 0; i < size; ++i) {
+    for (i = 0; i < mutators.size; ++i) {
         grid.push([]);
-        for (j = 0; j < size; ++j) {
+        for (j = 0; j < mutators.size; ++j) {
             grid[i].push(1);
-            moves.push(i*size + j);
+            moves.push({ i: i, j: j });
         }
     }
 
+    neighbors = getNeighbors(mutators.size, mutators.diagonal, mutators.circular);
     // From the solved grid, move some steps back.
     // This guarantees a solvable configuration.
-    function undoMove(pos, index) {
-        /*jshint bitwise: false */
-        var oldVal = grid[pos.i][pos.j],
-            newVal = operator(grid[i][j], oldVal);
-
-        grid[pos.i][pos.j] = newVal;
-        valid |= (newVal !== oldVal);
-    }
-
     shuffle(moves);
     // Number of moves to roll back.
-    k = 10 + 5*(size - 4);
-    moves.length = k;
-    for (k = k - 1; k >= 0; --k) {
-        pos = moves[k];
-        i = Math.floor(pos / size);
-        j = pos % size;
-
+    moves.length = 5 + 5*mutators.difficulty + 4*(mutators.size - 4);
+    moves.forEach(function(move, index) {
         valid = false;
-        allNeighbors[i][j].forEach(undoMove);
-        if (invertSelf) {
-            grid[i][j] = Number(!grid[i][j]);
+        neighbors[move.i][move.j].forEach(function undoMove(npos, index) {
+            /*jshint bitwise: false */
+            var oldVal = grid[npos.i][npos.j],
+                newVal = operator(grid[move.i][move.j], oldVal);
+
+            grid[npos.i][npos.j] = newVal;
+            valid |= (newVal !== oldVal);
+        });
+        if (mutators.invertSelf) {
+            grid[move.i][move.j] = Number(!grid[move.i][move.j]);
             valid = true;
         }
-
         if (valid) {
             ++moveCount;
         }
-    }
-
+    });
 
     if (DEBUG) {
-        log(moves.length + ' moves');
+        // Reverse the moves to print them in the correct order.
+        moves.reverse();
+        log(moves.length + ' moves, ' + moveCount + ' valid');
         log(moves);
-        log(moveCount);
 
         // Replay the moves to make sure the puzzle is sound.
         // NOTE: This only works for xor and not.
         copy = copy2d(grid);
         moves.forEach(function(move, index) {
-            var i = Math.floor(move / size),
-                j = move % size;
-
-            allNeighbors[i][j].forEach(function move(pos, index) {
-                copy[pos.i][pos.j] = operator(copy[i][j], copy[pos.i][pos.j]);
+            neighbors[move.i][move.j].forEach(function doMove(npos, index) {
+                copy[npos.i][npos.j] = operator(copy[move.i][move.j], copy[npos.i][npos.j]);
             });
-            if (invertSelf) {
-                copy[i][j] = Number(!copy[i][j]);
+            if (mutators.invertSelf) {
+                copy[move.i][move.j] = Number(!copy[move.i][move.j]);
             }
         });
-        for (i = 0; i < size; ++i)
-            for (j = 0; j < size; ++j)
+        for (i = 0; i < mutators.size; ++i)
+            for (j = 0; j < mutators.size; ++j)
                 if (copy[i][j] !== 1)
                     log('Invalid puzzle construction!');
     }
@@ -567,18 +555,24 @@ function fillHtmlGridFromStr(str) {
 }
 
 
-function makeCellSelector(i, j) {
-    return '#p-' + i + '-' + j;
-}
+/**
+ * Returns a dictionary of (string id, jQuery collection) pairs
+ * for each neighbor of the grid with the properties specified.
+ * @return {object} - the dictionary
+ */
+function getNeighborDict(size, diagonal, circular) {
+    var neighborDict = {}, i, j, cellNeighbors;
 
-function getPos($cell) {
-    var posStr = $cell.attr('id'),
-        posArr = posStr.split('-');
-
-    return {
-        i: parseInt(posArr[1], 10),
-        j: parseInt(posArr[2], 10)
-    };
+    for (i = 0; i < size; ++i) {
+        for (j = 0; j < size; ++j) {
+            cellNeighbors = getCellNeighbors(i, j, size, diagonal, circular);
+            neighborDict['p-' + i + '-' + j] =
+                $(cellNeighbors.map(function makeSelector(pos) {
+                    return '#p-' + pos.i + '-' + pos.j;
+                }).join(','));
+        }
+    }
+    return neighborDict;
 }
 
 
@@ -600,7 +594,7 @@ function updateStats(elapsedTime, moveCount, score) {
     updateScore(score);
 }
 
-function loadStats(storage) {
+function loadBestStats(storage) {
     var best;
 
     best = storage.loadBestTime();
@@ -627,7 +621,7 @@ function setHiddenCells() {
     // Use a class for quick visibility detection later on.
     $('.five, .six').addClass('hidden');
     // and then show as many as the user selected.
-    switch ($('#options input[name="grid-size"]:checked').val()) {
+    switch ($('.options input[name="grid-size"]:checked').val()) {
         case '6':
             $('.six').removeClass('hidden');
             /* falls through */
@@ -654,10 +648,15 @@ op.setup = function(options) {
             invertSelf: false,
             random: false
         }, options),
+        mutators = {
+            difficulty: 1,
+            size: 5,
+            diagonal: false,
+            circular: true,
+            invertSelf: false
+        },
         storage = new StorageManager(opts.prefix),
-        intervalId, grid, allNeighbors,
-        size, diagonal, circular, invertSelf,
-        elapsedTime, moveCount, score;
+        intervalId, grid, allNeighbors, elapsedTime, moveCount, score;
 
     function clearStats() {
         elapsedTime = 0;
@@ -695,42 +694,29 @@ op.setup = function(options) {
         var $cells = $('.cell:not(.hidden)'),
             element = null;
 
-        function markNeighbor(pos, index) {
-            $(makeCellSelector(pos.i, pos.j)).addClass('neighbor');
-        }
-        function unmarkNeighbor(pos, index) {
-            $(makeCellSelector(pos.i, pos.j)).removeClass('neighbor');
-        }
-
         function onMouseEnter() {
             /*jshint validthis: true */
-            var thisPos = getPos($(this));
-
-            allNeighbors[thisPos.i][thisPos.j].forEach(markNeighbor);
+            allNeighbors[$(this).attr('id')].addClass('neighbor');
             return false;
         }
 
         function onMouseLeave() {
             /*jshint validthis: true */
-            var thisPos = getPos($(this));
-
-            allNeighbors[thisPos.i][thisPos.j].forEach(unmarkNeighbor);
+            allNeighbors[$(this).attr('id')].removeClass('neighbor');
             return false;
         }
 
         function onClick(event) {
             /*jshint validthis: true, bitwise: false */
-            var $cell = $(this), val = getNumber($cell), pos = getPos($cell),
-                neighbors = allNeighbors[pos.i][pos.j], valid = false,
-                i, scoreModifier, $msgs;
+            var $cell = $(this), $neighbors = allNeighbors[$cell.attr('id')],
+                val = getNumber($cell), valid = false,
+                $msgs, i, scoreModifier;
 
-            for (i = 0; i < neighbors.length; ++i) {
-                pos = neighbors[i];
-                valid |= updateCell(
-                    $(makeCellSelector(pos.i, pos.j)), val, opts.operator);
+            for (i = 0; i < $neighbors.length; ++i) {
+                valid |= updateCell($neighbors.eq(i), val, opts.operator);
             }
 
-            if (invertSelf) {
+            if (mutators.invertSelf) {
                 invertCell($cell);
                 valid = true;
             }
@@ -756,7 +742,7 @@ op.setup = function(options) {
             }
 
             // If all (visible) cells contain '1'
-            if ($cells.filter('.one').length === size * size) {
+            if ($cells.filter('.one').length === mutators.size * mutators.size) {
                 stopTimer();
                 $('#final-score').text(score);
                 // Choose a random message to show.
@@ -862,25 +848,24 @@ op.setup = function(options) {
         elapsedTime = storage.loadTime();
         moveCount = storage.loadMoveCount();
         score = storage.loadScore();
-
         updateStats(elapsedTime, moveCount, score);
 
-        size = storage.loadGridSize();
-        diagonal = storage.loadDiagonal();
-        circular = storage.loadCircular();
-        invertSelf = storage.loadInvertSelf();
-
-        $('#options input[name="grid-size"][value="' + size + '"]').prop('checked', true);
-        $('#diagonal').prop('checked', diagonal);
-        $('#circular').prop('checked', circular);
-        $('#invert-self').prop('checked', invertSelf);
+        loadBestStats(storage);
+        mutators = storage.loadMutators();
+        $('.options input[name="difficulty"][value="' + mutators.difficulty + '"]')
+            .prop('checked', true);
+        $('.options input[name="grid-size"][value="' + mutators.size + '"]')
+            .prop('checked', true);
+        $('#diagonal').prop('checked', mutators.diagonal);
+        $('#circular').prop('checked', mutators.circular);
+        $('#invert-self').prop('checked', mutators.invertSelf);
 
         //
         setHiddenCells();
         registerHandlers();
         fillHtmlGridFromStr(storage.loadGame());
 
-        allNeighbors = getAllNeighbors(size, diagonal, circular);
+        allNeighbors = getNeighborDict(mutators.size, mutators.diagonal, mutators.circular);
         grid = storage.loadGrid();
     }
 
@@ -889,22 +874,20 @@ op.setup = function(options) {
         $('#win-screen').hide();
         clearStats();
 
-        size = parseInt($('#options input[name="grid-size"]:checked').val(), 10);
-        diagonal = $('#diagonal').is(':checked');
-        circular = $('#circular').is(':checked');
-        invertSelf = opts.invertSelf || $('#invert-self').is(':checked');
+        mutators.difficulty = parseInt($('.options input[name="difficulty"]:checked').val(), 10);
+        mutators.size = parseInt($('.options input[name="grid-size"]:checked').val(), 10);
+        mutators.diagonal = $('#diagonal').is(':checked');
+        mutators.circular = $('#circular').is(':checked');
+        mutators.invertSelf = opts.invertSelf || $('#invert-self').is(':checked');
+        storage.saveMutators(mutators);
+        loadBestStats(storage);
 
-        storage.saveGridSize(size);
-        storage.saveDiagonal(diagonal);
-        storage.saveCircular(circular);
-        storage.saveInvertSelf(invertSelf);
-
-        allNeighbors = getAllNeighbors(size, diagonal, circular);
         if (opts.random) {
-            grid = newRandomGrid(size);
+            grid = newRandomGrid(mutators.size, mutators.difficulty);
         } else {
-            grid = newSolvableGrid(size, allNeighbors, opts.operator, invertSelf);
+            grid = newSolvableGrid(mutators, opts.operator);
         }
+        allNeighbors = getNeighborDict(mutators.size, mutators.diagonal, mutators.circular);
         //
         setHiddenCells();
         fillHtmlGridFromArr(grid);
@@ -942,7 +925,6 @@ op.setup = function(options) {
         event.preventDefault();     // but let the event propagate!
     });
 
-    loadStats(storage);
     if (storage.hasSavedGame()) {
         loadGame();
     } else {
@@ -950,7 +932,7 @@ op.setup = function(options) {
     }
     startTimer();
 
-    $('#options input').change(newGame);
+    $('.options input').change(newGame);
     $('.start-button').click(newGame);
     $('.restart-button').click(restartGame);
 };
